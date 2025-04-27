@@ -37,10 +37,8 @@ bool isValidLine(const string& line)
 
 int main(int argc, char* argv[]) 
 {
-    // Determine input path
-    path inPath = (argc > 1)
-        ? path(argv[1])
-        : path("../data/transactions.csv");
+    // Set input path
+    fs::path inPath = fs::current_path().parent_path() / "data" / "cleaned_transactions.csv";
 
     // Open input
     ifstream fin(inPath);
