@@ -64,6 +64,25 @@ int main(int argc, char* argv[])
     {
         fout << line << '\n';
     }
+    /* Pass-4 : C4 (blank / null / NaN) ---------------------------- */
+    for (size_t i = 0; i < rows.size; ) {
+        split(rows.data[i], cols, 4);
+        if (isBlankOrNull(cols[3])) rows.erase(i); else ++i;
+    }
+
+    /* build output path */
+    std::string dir, base;
+    splitPath(inFile, dir, base);
+    std::string outFile = dir + "cleaned_" + base;
+
+    std::ofstream fout(outFile);
+    if (!fout) { std::cerr << "Cannot create output file: " << outFile << '\n'; return 1; }
+
+    fout << header << '\n';
+    for (size_t i = 0; i < rows.size; ++i) fout << rows.data[i] << '\n';
+    fout.close();
+
+    std::cout << "Finished. Kept " << rows.size << " rows  →  " << outFile << '\n';
 
     // Process and write valid rows in one pass
     size_t kept = 0;
@@ -76,7 +95,6 @@ int main(int argc, char* argv[])
         }
     }
 
-    cout << "Finished. Kept " << kept
-              << " rows → " << outPath << "\n";
+    cout << "Finished. Kept " << kept << " rows → " << outPath << "\n";
     return 0;
 }
