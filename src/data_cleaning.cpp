@@ -23,7 +23,8 @@ bool isBadCell(string_view cell)
 bool isValidLine(const string& line) 
 {
     size_t start = 0, len = line.size();
-    while (start <= len) {
+    while (start <= len) 
+    {
         size_t comma = line.find(',', start);
         if (comma == string::npos) comma = len;
         if (isBadCell({ line.data() + start, comma - start }))
@@ -43,7 +44,8 @@ int main(int argc, char* argv[])
 
     // Open input
     ifstream fin(inPath);
-    if (!fin) {
+    if (!fin) 
+    {
         cerr << "Cannot open input file: " << inPath << "\n";
         return 1;
     }
@@ -52,21 +54,25 @@ int main(int argc, char* argv[])
     path outPath = inPath.parent_path()
                      / ("cleaned_" + inPath.filename().string());
     ofstream fout(outPath);
-    if (!fout) {
+    if (!fout) 
+    {
         cerr << "Cannot create output file: " << outPath << "\n";
         return 1;
     }
 
     // Copy header
     string line;
-    if (getline(fin, line)) {
+    if (getline(fin, line)) 
+    {
         fout << line << '\n';
     }
 
     // Process and write valid rows in one pass
     size_t kept = 0;
-    while (getline(fin, line)) {
-        if (isValidLine(line)) {
+    while (getline(fin, line)) 
+    {
+        if (isValidLine(line)) 
+        {
             fout << line << '\n';
             ++kept;
         }
