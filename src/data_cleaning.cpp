@@ -111,7 +111,6 @@ int main(int argc, char* argv[])
     for (size_t i = 0; i < rows.size; ++i) fout << rows.data[i] << '\n';
     fout.close();
 
-    std::cout << "Finished. Kept " << rows.size
-              << " rows  →  " << outFile << '\n';
+    std::cout << "Finished. Kept " << rows.size << " rows  →  " << outFile << '\n';
     return 0;
 }
