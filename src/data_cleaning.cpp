@@ -95,7 +95,6 @@ int main(int argc, char* argv[])
         }
     }
 
-    cout << "Finished. Kept " << kept
-              << " rows → " << outPath << "\n";
+    cout << "Finished. Kept " << kept << " rows → " << outPath << "\n";
     return 0;
 }
