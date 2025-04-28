@@ -23,8 +23,7 @@ bool isBadCell(string_view cell)
 bool isValidLine(const string& line) 
 {
     size_t start = 0, len = line.size();
-    while (start <= len) 
-    {
+    while (start <= len) {
         size_t comma = line.find(',', start);
         if (comma == string::npos) comma = len;
         if (isBadCell({ line.data() + start, comma - start }))
@@ -42,8 +41,7 @@ int main(int argc, char* argv[])
 
     // Open input
     ifstream fin(inPath);
-    if (!fin) 
-    {
+    if (!fin) {
         cerr << "Cannot open input file: " << inPath << "\n";
         return 1;
     }
@@ -52,49 +50,27 @@ int main(int argc, char* argv[])
     path outPath = inPath.parent_path()
                      / ("cleaned_" + inPath.filename().string());
     ofstream fout(outPath);
-    if (!fout) 
-    {
+    if (!fout) {
         cerr << "Cannot create output file: " << outPath << "\n";
         return 1;
     }
 
     // Copy header
     string line;
-    if (getline(fin, line)) 
-    {
+    if (getline(fin, line)) {
         fout << line << '\n';
     }
-    /* Pass-4 : C4 (blank / null / NaN) ---------------------------- */
-    for (size_t i = 0; i < rows.size; ) {
-        split(rows.data[i], cols, 4);
-        if (isBlankOrNull(cols[3])) rows.erase(i); else ++i;
-    }
-
-    /* build output path */
-    std::string dir, base;
-    splitPath(inFile, dir, base);
-    std::string outFile = dir + "cleaned_" + base;
-
-    std::ofstream fout(outFile);
-    if (!fout) { std::cerr << "Cannot create output file: " << outFile << '\n'; return 1; }
-
-    fout << header << '\n';
-    for (size_t i = 0; i < rows.size; ++i) fout << rows.data[i] << '\n';
-    fout.close();
-
-    std::cout << "Finished. Kept " << rows.size << " rows  →  " << outFile << '\n';
 
     // Process and write valid rows in one pass
     size_t kept = 0;
-    while (getline(fin, line)) 
-    {
-        if (isValidLine(line)) 
-        {
+    while (getline(fin, line)) {
+        if (isValidLine(line)) {
             fout << line << '\n';
             ++kept;
         }
     }
 
-    cout << "Finished. Kept " << kept << " rows → " << outPath << "\n";
+    cout << "Finished. Kept " << kept
+              << " rows → " << outPath << "\n";
     return 0;
 }
