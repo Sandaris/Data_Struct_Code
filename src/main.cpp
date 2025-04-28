@@ -25,20 +25,20 @@ int main()
     //     cout << line << endl;
     // }
     
-    string cleaned_review = "cleaned_transactions.csv";
-    dataContainer2D cleaned_review_data = getData(cleaned_review);
+    string filepath = "cleaned_transactions.csv";
+    dataContainer2D cleaned_transactions_data = getData(filepath);
 
-    cout << cleaned_review_data.error << endl;
+    cout << cleaned_transactions_data.error << endl;
     cout << "Fields: ";    
-    cout << cleaned_review_data.fields[1] << endl;
-    cout << cleaned_review_data.data[0][0] << endl;
-    cout << cleaned_review_data.x << endl;
-    cout << cleaned_review_data.y << endl;
+    cout << cleaned_transactions_data.fields[5] << endl;
+    cout << cleaned_transactions_data.data[0][1] << endl;
+    cout << cleaned_transactions_data.x << endl;
+    cout << cleaned_transactions_data.y << endl;
 
     cout << "----------------------------------------" << endl;
 
 
-    freeContainer(cleaned_review_data);
+    freeContainer(cleaned_transactions_data);
 
     return 0;
 }
