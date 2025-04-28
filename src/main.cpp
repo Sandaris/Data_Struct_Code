@@ -11,8 +11,6 @@ using fs::path;
 
 using namespace std;
 
-//testinggggggggggggg
-
 int main() 
 {
     string fileContent = readCSVFile("cleaned_reviews.csv");
