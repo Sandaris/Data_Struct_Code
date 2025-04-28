@@ -46,6 +46,34 @@ struct LinkedList {
     }
 
     // Load a CSV from ../data/filename into this list
+/*Step-by-step:
+Locate and open the file in ../data/filename.
+
+Read the first line (the header):
+
+Count commas (',') to figure out how many columns (x = commas + 1).
+
+Allocate fieldHead[x].
+
+Split that line at each comma and store each column name into fieldHead[0]…fieldHead[x-1].
+
+For each remaining line (each CSV data row):
+
+Skip if it’s blank.
+
+Create a new Node(x)—an empty box for one row.
+
+Split the line by commas again, putting each piece into node->data[0]…data[x-1].
+
+Link the new node onto the end of the list:
+
+If it’s the very first one, head = tail = node.
+
+Otherwise, hook node->prev to the old tail, and tail->next to this new node, then update tail.
+
+Increment the row count y.
+
+Return true on success (or false if the file couldn’t be opened or was empty).*/
     bool loadFromCSV(const string& filename) {
         fs::path filePath = fs::current_path().parent_path()
                             / "data" / filename;
@@ -121,6 +149,48 @@ struct LinkedList {
     }
 };
 
+
+// ——————————————————
+// Bubble‐sort as a free function
+// ——————————————————
+void bubbleSort(LinkedList& list, const std::string& columnName) 
+{
+    // 1) find the column index
+    int colIndex = -1;
+    for (int i = 0; i < list.x; ++i) {
+        if (list.fieldHead[i] == columnName) {
+            colIndex = i;
+            break;
+        }
+    }
+    if (colIndex < 0) {
+        std::cerr << "Error: column \"" << columnName << "\" not found.\n";
+        return;
+    }
+
+    // 2) start timer
+    auto t0 = std::chrono::steady_clock::now();
+
+    // 3) bubble‐sort by swapping data pointers
+    bool swapped;
+    do {
+        swapped = false;
+        for (Node* cur = list.head; cur && cur->next; cur = cur->next) {
+            if (cur->data[colIndex] > cur->next->data[colIndex]) {
+                std::swap(cur->data, cur->next->data);
+                swapped = true;
+            }
+        }
+    } while (swapped);
+
+    // 4) stop timer & report
+    auto t1 = std::chrono::steady_clock::now();
+    auto elapsed = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0);
+    std::cout << "Bubble sort on \"" << columnName << "\" took "
+              << elapsed.count() << " μs\n";
+}
+
+
 int main() 
 {
     LinkedList list;
@@ -129,9 +199,22 @@ int main()
         return 1;
     }
 
-    cout << "Columns: " << list.x
-         << " | Rows: "   << list.y << "\n\n";
+    // sort externally
+    bubbleSort(list, "Price");
 
+    // print to verify
     list.printForward();
+
+    // print fields
+    std::cout << "Fields: ";
+    for (int i = 0; i < list.x; ++i) {
+        std::cout << list.fieldHead[i] << " ";
+    }
+    std::cout << "\n";
+
     return 0;
+    //      << " | Rows: "   << list.y << "\n\n";
+
+    // list.printForward();
+    // return 0;
 }
