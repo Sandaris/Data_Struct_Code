@@ -86,8 +86,12 @@ char** splitCustom(const string& line, int& count) {
 }
 
 dataContainer2D getData(const string& filename) {
+    
     dataContainer2D container;
-    ifstream file(filename);
+
+    fs::path filePath = fs::current_path().parent_path() / "data" / filename;
+
+    ifstream file(filePath);
 
     if (!file.is_open()) {
         container.error = 1;
