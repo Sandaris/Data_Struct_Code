@@ -58,23 +58,27 @@ struct dataContainer1D {
     int x = 0;
 };
 
-char** splitCustom(const string& line, int& count) {
-    char** tokens = new char*[4];
-    for (int i = 0; i < 4; ++i) tokens[i] = nullptr;
+char** splitCustom(const std::string& line, int expectedFields, int& count) {
+    char** tokens = new char*[expectedFields];
+    for (int i = 0; i < expectedFields; ++i) tokens[i] = nullptr;
 
-    string current;
+    std::string current;
     bool insideQuotes = false;
-    int commaCount = 0;
     int tokenIndex = 0;
 
     for (size_t i = 0; i < line.size(); ++i) {
         char c = line[i];
         if (c == '"') {
             insideQuotes = !insideQuotes;
-        } else if (c == ',' && !insideQuotes && commaCount < 3) {
+        } else if (c == ',' && !insideQuotes) {
             tokens[tokenIndex++] = strdup(current.c_str());
             current.clear();
-            commaCount++;
+            if (tokenIndex >= expectedFields - 1) {
+                // After expected fields-1 commas, put the rest into last field
+                tokens[tokenIndex] = strdup(line.substr(i + 1).c_str());
+                count = expectedFields;
+                return tokens;
+            }
         } else {
             current += c;
         }
@@ -85,39 +89,40 @@ char** splitCustom(const string& line, int& count) {
     return tokens;
 }
 
-dataContainer2D getData(const string& filename) {
-    
+dataContainer2D getData(const std::string& filename) {
     dataContainer2D container;
-
     fs::path filePath = fs::current_path().parent_path() / "data" / filename;
 
-    ifstream file(filePath);
-
+    std::ifstream file(filePath);
     if (!file.is_open()) {
         container.error = 1;
         return container;
     }
 
-    string buffer;
+    std::string buffer;
     bool firstLine = true;
     int rowCount = 0;
-    int rowCapacity = 10; // start small, grow dynamically
+    int rowCapacity = 10;
+    int expectedFields = 0;
 
     container.data = new char**[rowCapacity];
 
-    while (getline(file, buffer)) {
+    while (std::getline(file, buffer)) {
         if (buffer.empty()) continue;
 
         int count = 0;
-        char** row = splitCustom(buffer, count);
 
         if (firstLine) {
-            container.fields = row;
+            // Count how many commas in header
+            expectedFields = 1; // at least one field
+            for (char c : buffer) {
+                if (c == ',') expectedFields++;
+            }
+            container.fields = splitCustom(buffer, expectedFields, count);
             container.x = count;
             firstLine = false;
         } else {
             if (rowCount >= rowCapacity) {
-                // Expand memory
                 int newCapacity = rowCapacity * 2;
                 char*** newData = new char**[newCapacity];
                 for (int i = 0; i < rowCount; ++i) {
@@ -127,7 +132,7 @@ dataContainer2D getData(const string& filename) {
                 container.data = newData;
                 rowCapacity = newCapacity;
             }
-            container.data[rowCount++] = row;
+            container.data[rowCount++] = splitCustom(buffer, expectedFields, count);
         }
     }
 
@@ -136,6 +141,7 @@ dataContainer2D getData(const string& filename) {
 
     return container;
 }
+
 
 void freeContainer(dataContainer2D& container) {
     if (container.fields != nullptr) {
