@@ -5,6 +5,9 @@
 #include <sstream>
 #include <cstring>
 
+#include "linkedList.hpp"
+
+
 namespace fs = std::filesystem;
 using fs::path;
 
@@ -13,6 +16,18 @@ using namespace std;
 void print_helo()
 {
     std::cout << "hello world\n";
+}
+
+void display_result(int val1, int val2, int val3)
+{
+    //code starts here
+//     Time ( average of 10 simulation)	
+//     linked	array
+// Sort	bubble	value1	value2
+// merge	value3	value4
+// search	linear	value5	value6
+// binary	value7	value8
+
 }
 
 /**
