@@ -5,6 +5,7 @@
 #include <filesystem>
 
 #include "common_function.hpp"
+#include "Array.hpp"
 
 namespace fs = std::filesystem;
 using fs::path;
@@ -23,20 +24,52 @@ int main()
     //     cout << line << endl;
     // }
     
-    string filepath = "cleaned_transactions.csv";
-    dataContainer2D cleaned_transactions_data = getData(filepath);
-
-    cout << cleaned_transactions_data.error << endl;
-    cout << "Fields: ";    
-    cout << cleaned_transactions_data.fields[5] << endl;
-    cout << cleaned_transactions_data.data[0][1] << endl;
-    cout << cleaned_transactions_data.x << endl;
-    cout << cleaned_transactions_data.y << endl;
-
     cout << "----------------------------------------" << endl;
 
+    dataContainer2D cleaned_review_data = getData("cleaned_transactions.csv");
 
-    freeContainer(cleaned_transactions_data);
+    // cout << "----------------------------------------" << endl;
+
+    // dataContainer2D bubble_Container = cloneContainer(cleaned_review_data);
+
+    // cout << "----------------------------------------" << endl;
+
+    // SortResult bubble_result = insertionSortArray(bubble_Container, 4, true);
+
+    // cout << "----------------------------------------" << endl;
+
+    // std::cout << "Bubble Sort took " << bubble_result.timeMicroseconds << " μs"<< " and made " << bubble_result.swapCount << " swaps.\n";
+
+    // cout << "----------------------------------------" << endl;\
+    
+    // cout << cleaned_review_data.y << " rows read\n";
+
+    // cout << "----------------------------------------" << endl;
+
+    // cout << "RAM used: " << bubble_result.memoryKBUsed << " KB\n";
+    
+    // cout << "----------------------------------------" << endl;
+
+    // cout << "Manual estimated memory: " << bubble_result.manualEstimatedBytes << " bytes\n";
+
+    // cout << "----------------------------------------" << endl;
+
+    SearchResult meta;
+dataContainer2D filtered = linearSearchTwoFields(cleaned_review_data, 2, "Books", 5, "Debit Card", meta);
+
+int i, j = 0;
+
+for (i = 0; i < filtered.y; i++) {
+    for (j = 0; j < filtered.x; j++) {
+        cout << filtered.data[i][j] << " ";
+    }
+    cout << endl;
+}
+
+std::cout << "Found " << meta.resultCount << " rows in " << meta.timeMicroseconds << " μs "
+          << "with " << meta.comparisons << " comparisons.\n";
+
+    freeContainer(cleaned_review_data);
 
     return 0;
 }
