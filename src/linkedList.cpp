@@ -15,9 +15,6 @@ int main()
 
     int val1 = bubbleSort(list, "Product ID");
 
-    //list.printForward();
-
-
     int val2 = mergeSortList(list, "Product ID");
 
     int val3 = insertionSort(list, "Product ID");

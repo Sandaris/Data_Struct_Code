@@ -204,7 +204,7 @@ int bubbleSort(LinkedList& list, const std::string& columnName)
     }
     if (colIndex < 0) {
         std::cerr << "Error: column \"" << columnName << "\" not found.\n";
-        return 0;
+        return 1;
     }
 
     // 2) start timer & memory tracking
@@ -236,7 +236,7 @@ int bubbleSort(LinkedList& list, const std::string& columnName)
 
 
 int mergeSortList(LinkedList& list, const std::string& columnName) {
-    if (!list.head) return 0;
+    if (!list.head) return 1; // nothing to sort
 
     // 1) find the column index
     int colIndex = -1;
@@ -248,7 +248,7 @@ int mergeSortList(LinkedList& list, const std::string& columnName) {
     }
     if (colIndex < 0) {
         std::cerr << "Error: column \"" << columnName << "\" not found.\n";
-        return 0;
+        return 1;
     }
 
     using NodePtr = Node*;
@@ -335,11 +335,11 @@ int insertionSort(LinkedList& list, const std::string& columnName) {
     }
     if (col < 0) {
         std::cerr << "Error: column \"" << columnName << "\" not found.\n";
-        return 0;
+        return 1;
     }
 
     // nothing to sort if empty or single node
-    if (!list.head || !list.head->next) return 0 ;
+    if (!list.head || !list.head->next) return 1 ;
 
     // 2) Start timer
     auto t0 = std::chrono::high_resolution_clock::now();
@@ -404,11 +404,11 @@ int selectionSort(LinkedList& list, const std::string& columnName)
     }
     if (col < 0) {
         std::cerr << "Error: column \"" << columnName << "\" not found.\n";
-        return 0;
+        return 1;
     }
 
     // nothing to do on empty or single‐node list
-    if (!list.head || !list.head->next) return 0;
+    if (!list.head || !list.head->next) return 1;
 
     // 2) Start timer
     auto t0 = std::chrono::high_resolution_clock::now();
