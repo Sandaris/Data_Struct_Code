@@ -22,7 +22,7 @@ int main()
 
     insertionSort(list, "Product ID");
 
-
+    selectionSort(list, "Product ID");
     
     //list.printForward();
 

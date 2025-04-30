@@ -317,6 +317,7 @@ void mergeSortList(LinkedList& list, const std::string& columnName) {
 }
 
 void insertionSort(LinkedList& list, const std::string& columnName) {
+    
     // 1) Find column index
     int col = -1;
     for (int i = 0; i < list.x; ++i) {
@@ -379,5 +380,50 @@ void insertionSort(LinkedList& list, const std::string& columnName) {
 
     // 6) Report elapsed time
     std::cout << "Insertion sort on \"" << columnName
+              << "\" took " << ms << " ms\n";
+}
+
+void selectionSort(LinkedList& list, const std::string& columnName) 
+{
+    // 1) Find column index
+    int col = -1;
+    for (int i = 0; i < list.x; ++i) {
+        if (list.fieldHead[i] == columnName) {
+            col = i;
+            break;
+        }
+    }
+    if (col < 0) {
+        std::cerr << "Error: column \"" << columnName << "\" not found.\n";
+        return;
+    }
+
+    // nothing to do on empty or single‐node list
+    if (!list.head || !list.head->next) return;
+
+    // 2) Start timer
+    auto t0 = std::chrono::high_resolution_clock::now();
+
+    // 3) Selection‐sort by swapping each node's data pointer
+    for (Node* i = list.head; i; i = i->next) {
+        // find min in [i … end)
+        Node* minNode = i;
+        for (Node* j = i->next; j; j = j->next) {
+            if (j->data[col] < minNode->data[col]) {
+                minNode = j;
+            }
+        }
+        // swap row‐buffers if needed
+        if (minNode != i) {
+            std::swap(i->data, minNode->data);
+        }
+    }
+
+    // 4) Stop timer
+    auto t1 = std::chrono::high_resolution_clock::now();
+    auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(t1 - t0).count();
+
+    // 5) Report elapsed time
+    std::cout << "Selection sort on \"" << columnName
               << "\" took " << ms << " ms\n";
 }
