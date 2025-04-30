@@ -209,7 +209,6 @@ void bubbleSort(LinkedList& list, const std::string& columnName)
 
     // 2) start timer & memory tracking
     auto t0 = std::chrono::steady_clock::now();
-    size_t initialMemory = sizeof(Node) * list.y;
 
     // 3) bubble‐sort by swapping data pointers
     bool swapped;
@@ -226,13 +225,10 @@ void bubbleSort(LinkedList& list, const std::string& columnName)
     // 4) stop timer & memory tracking
     auto t1 = std::chrono::steady_clock::now();
     auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(t1 - t0);
-    size_t finalMemory = sizeof(Node) * list.y;
 
     // 5) report
     std::cout << "Bubble sort on \"" << columnName << "\" took "
               << elapsed.count() << " ms\n";
-    std::cout << "Memory used during bubble sort: "
-              << (finalMemory - initialMemory) << " bytes\n";
 }
 
 
@@ -318,4 +314,70 @@ void mergeSortList(LinkedList& list, const std::string& columnName) {
     }
     list.tail = prev;
     list.y    = count;
+}
+
+void insertionSort(LinkedList& list, const std::string& columnName) {
+    // 1) Find column index
+    int col = -1;
+    for (int i = 0; i < list.x; ++i) {
+        if (list.fieldHead[i] == columnName) {
+            col = i;
+            break;
+        }
+    }
+    if (col < 0) {
+        std::cerr << "Error: column \"" << columnName << "\" not found.\n";
+        return;
+    }
+
+    // nothing to sort if empty or single node
+    if (!list.head || !list.head->next) return;
+
+    // 2) Start timer
+    auto t0 = std::chrono::high_resolution_clock::now();
+
+    // 3) Perform insertion sort on the doubly-linked list
+    Node* sorted = list.head;
+    Node* curr   = sorted->next;
+    sorted->prev = sorted->next = nullptr;
+
+    while (curr) {
+        Node* next = curr->next;
+        curr->prev = curr->next = nullptr;
+
+        // insert at front?
+        if (curr->data[col] < sorted->data[col]) {
+            curr->next   = sorted;
+            sorted->prev = curr;
+            sorted       = curr;
+        } else {
+            // locate insertion point
+            Node* p = sorted;
+            while (p->next && p->next->data[col] <= curr->data[col]) {
+                p = p->next;
+            }
+            // insert after p
+            curr->next        = p->next;
+            if (p->next) p->next->prev = curr;
+            p->next           = curr;
+            curr->prev        = p;
+        }
+
+        curr = next;
+    }
+
+    // 4) Stop timer
+    auto t1 = std::chrono::high_resolution_clock::now();
+    auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(t1 - t0).count();
+
+    // 5) Update list head & tail
+    list.head = sorted;
+    list.tail = sorted;
+    while (list.tail->next) {
+        list.tail = list.tail->next;
+    }
+
+    // 6) Report elapsed time
+    std::cout << "Insertion sort on \"" << columnName
+              << "\" took " << ms << " ms\n";
 }

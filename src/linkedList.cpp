@@ -19,6 +19,10 @@ int main()
 
 
     mergeSortList(list, "Product ID");
+
+    insertionSort(list, "Product ID");
+
+
     
     //list.printForward();
 
