@@ -14,6 +14,12 @@ int main()
     }
 
     bubbleSort(list, "Product ID");
+
+    //list.printForward();
+
+
+    mergeSortList(list, "Product ID");
+    
     //list.printForward();
 
 }

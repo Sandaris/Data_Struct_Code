@@ -1,14 +1,17 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <functional>
 #include <filesystem>
+
 //#include "common_function.hpp"
 
 namespace fs = std::filesystem;
 using namespace std;
 
 // Node: holds one CSV row of x columns
-struct Node {
+struct Node 
+{
     string* data;   // array of length x
     Node* prev;
     Node* next;
@@ -23,7 +26,9 @@ struct Node {
 };
 
 // Doubly-linked list that also knows its header row
-struct LinkedList {
+struct LinkedList 
+{
+
     string* fieldHead;  // column names, length = x
     Node*   head;       // first data node
     Node*   tail;       // last data node
@@ -45,7 +50,7 @@ struct LinkedList {
         }
     }
 
-    // Load a CSV from ../data/filename into this list
+// Load a CSV from ../data/filename into this list
     /*Step-by-step:
     Locate and open the file in ../data/filename.
 
@@ -175,7 +180,6 @@ struct LinkedList {
     }
 };
 
-
 // ——————————————————
 // Bubble‐sort as a free function
 /* 
@@ -203,8 +207,9 @@ void bubbleSort(LinkedList& list, const std::string& columnName)
         return;
     }
 
-    // 2) start timer
+    // 2) start timer & memory tracking
     auto t0 = std::chrono::steady_clock::now();
+    size_t initialMemory = sizeof(Node) * list.y;
 
     // 3) bubble‐sort by swapping data pointers
     bool swapped;
@@ -218,9 +223,99 @@ void bubbleSort(LinkedList& list, const std::string& columnName)
         }
     } while (swapped);
 
-    // 4) stop timer & report
+    // 4) stop timer & memory tracking
     auto t1 = std::chrono::steady_clock::now();
     auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(t1 - t0);
+    size_t finalMemory = sizeof(Node) * list.y;
+
+    // 5) report
     std::cout << "Bubble sort on \"" << columnName << "\" took "
               << elapsed.count() << " ms\n";
+    std::cout << "Memory used during bubble sort: "
+              << (finalMemory - initialMemory) << " bytes\n";
+}
+
+
+
+void mergeSortList(LinkedList& list, const std::string& columnName) {
+    if (!list.head) return;
+
+    // 1) find the column index
+    int colIndex = -1;
+    for (int i = 0; i < list.x; ++i) {
+        if (list.fieldHead[i] == columnName) {
+            colIndex = i;
+            break;
+        }
+    }
+    if (colIndex < 0) {
+        std::cerr << "Error: column \"" << columnName << "\" not found.\n";
+        return;
+    }
+
+    using NodePtr = Node*;
+
+    // 2) recursive lambdas, capturing colIndex
+    std::function<NodePtr(NodePtr)> split = [&](NodePtr head) -> NodePtr {
+        NodePtr slow = head, fast = head->next;
+        while (fast && fast->next) {
+            slow = slow->next;
+            fast = fast->next->next;
+        }
+        NodePtr second = slow->next;
+        slow->next = nullptr;
+        if (second) second->prev = nullptr;
+        return second;
+    };
+
+    std::function<NodePtr(NodePtr,NodePtr)> sortedMerge =
+      [&](NodePtr a, NodePtr b) -> NodePtr
+    {
+        if (!a) return b;
+        if (!b) return a;
+        if (a->data[colIndex] <= b->data[colIndex]) {
+            a->next = sortedMerge(a->next, b);
+            if (a->next) a->next->prev = a;
+            a->prev = nullptr;
+            return a;
+        } else {
+            b->next = sortedMerge(a, b->next);
+            if (b->next) b->next->prev = b;
+            b->prev = nullptr;
+            return b;
+        }
+    };
+
+    std::function<NodePtr(NodePtr)> mergeSort =
+      [&](NodePtr head) -> NodePtr
+    {
+        if (!head || !head->next) return head;
+        NodePtr second = split(head);
+        head   = mergeSort(head);
+        second = mergeSort(second);
+        return sortedMerge(head, second);
+    };
+
+    // 3) START TIMER
+    auto t0 = std::chrono::steady_clock::now();
+
+    // 4) sort
+    list.head = mergeSort(list.head);
+
+    // 5) STOP TIMER & REPORT
+    auto t1      = std::chrono::steady_clock::now();
+    auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(t1 - t0);
+    std::cout << "Merge sort on \"" << columnName
+              << "\" took " << elapsed.count() << " ms\n";
+
+    // 6) repair tail & update row count
+    NodePtr cur = list.head, prev = nullptr;
+    int count = 0;
+    while (cur) {
+        prev = cur;
+        cur  = cur->next;
+        ++count;
+    }
+    list.tail = prev;
+    list.y    = count;
 }

@@ -125,12 +125,14 @@ int main()
     string filename = "reviews.csv";
     
     LinkedList list;
-    if (!list.loadFromCSV(filename)) {
+    if (!list.loadFromCSV(filename)) 
+    {
         cerr << "Error: Cannot load CSV file.\n";
         return 1;
     }
    
     cout << list.y << " rows read\n";
+    
     // clean out rows with any bad cell
     dropCells(list);
 
@@ -139,10 +141,7 @@ int main()
 
     cout << "Cleaned list has " << list.y << " valid rows.\n";
     
-    // … now you can sort/search the clean list …
-
     return 0;
-
 
 }
 
