@@ -5,6 +5,7 @@
 #include <filesystem>
 
 #include "common_function.hpp"
+#include "Array.hpp"
 
 namespace fs = std::filesystem;
 using fs::path;
@@ -25,19 +26,34 @@ int main()
     //     cout << line << endl;
     // }
     
+    cout << "----------------------------------------" << endl;
 
     dataContainer2D cleaned_review_data = getData("cleaned_transactions.csv");
 
-    cout << cleaned_review_data.error << endl;
-    cout << "Fields: ";    
-    cout << cleaned_review_data.fields[0] << endl;
-    cout << cleaned_review_data.data[0][0] << endl;
-    cout << cleaned_review_data.x << endl;
-    cout << cleaned_review_data.y << endl;
+    cout << "----------------------------------------" << endl;
+
+    dataContainer2D bubble_Container = cloneContainer(cleaned_review_data);
+
+    cout << "----------------------------------------" << endl;
+    
+    SortResult bubble_result = bubbleSortArray(bubble_Container, 4, true);
 
     cout << "----------------------------------------" << endl;
 
+    std::cout << "Bubble Sort took " << bubble_result.timeMicroseconds << " μs"<< " and made " << bubble_result.swapCount << " swaps.\n";
 
+    cout << "----------------------------------------" << endl;\
+    int i =0;
+    while(i <cleaned_review_data.y){
+        cout << bubble_Container.data[i][4] << endl;
+        i++;
+    }
+    cout << cleaned_review_data.y << " rows read\n";
+    cout << "----------------------------------------" << endl;
+    cout << "----------------------------------------" << endl;
+
+
+    freeContainer(bubble_Container);
     freeContainer(cleaned_review_data);
 
     return 0;

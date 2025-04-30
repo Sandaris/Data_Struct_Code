@@ -57,7 +57,7 @@ string readCSVFile(const string& filename)
     return buffer.str();
 }
 
-
+///////////////////////////////////// Array Data Structure /////////////////////////////////////
 struct dataContainer2D {
     int error = 0;
     char** fields = nullptr;     // 1D array: fields
@@ -73,6 +73,8 @@ struct dataContainer1D {
     int x = 0;
 };
 
+
+///////////////////////////////////// Reading CSV /////////////////////////////////////////////
 char** splitCustom(const std::string& line, int expectedFields, int& count) {
     char** tokens = new char*[expectedFields];
     for (int i = 0; i < expectedFields; ++i) tokens[i] = nullptr;
@@ -158,7 +160,7 @@ dataContainer2D getData(const std::string& filename) {
     return container;
 }
 
-
+///////////////////////////////////// Free Memory /////////////////////////////////////////////
 void freeContainer(dataContainer2D& container) {
     if (container.fields != nullptr) {
         for (int i = 0; i < container.x; ++i) {
@@ -202,3 +204,5 @@ void freeContainer(dataContainer2D& container) {
  * 
  * freeContainer(container);
  */
+
+
