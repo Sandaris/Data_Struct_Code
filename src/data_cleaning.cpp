@@ -3,6 +3,8 @@
 #include <string>
 #include <string_view>
 #include <filesystem>
+#include "linkedList.hpp"
+
 
 namespace fs = std::filesystem;
 using fs::path;
@@ -34,9 +36,114 @@ bool isValidLine(const string& line)
     return !(len > 0 && line.back() == ',');
 }
 
+// --- free function to drop any row containing a bad cell ---
+void dropCells(LinkedList& list) 
+{
+    Node* cur = list.head;
+    while (cur) {
+        bool bad = false;
+        for (int i = 0; i < list.x; ++i) {
+            if (isBadCell(cur->data[i])) {
+                bad = true;
+                break;
+            }
+        }
+
+        Node* nxt = cur->next;
+        if (bad) {
+            // unlink
+            if (cur->prev) cur->prev->next = cur->next;
+            else            list.head = cur->next;
+
+            if (cur->next) cur->next->prev = cur->prev;
+            else            list.tail = cur->prev;
+
+            delete cur;
+            --list.y;
+        }
+        cur = nxt;
+    }
+}
+
+void writeCleanCSV(const LinkedList& list, const string& origFilename) {
+    // build the output filename
+    string outName = "cleaned_" + origFilename;
+    fs::path outPath = fs::current_path().parent_path() / "data" / outName;
+
+    ofstream out(outPath);
+    if (!out.is_open()) {
+        cerr << "Error: Cannot write to " << outPath << "\n";
+        return;
+    }
+
+    // helper to escape a single field:
+    auto escapeField = [&](const string& field) -> string {
+        bool needQuotes = false;
+        string buf;
+        buf.reserve(field.size() * 2);
+        for (char c : field) {
+            if (c == '"' ) {
+                buf += "\"\"";      // double the quote
+                needQuotes = true;
+            } else {
+                buf += c;
+                if (c == ',' || c == '\n' || c == '\r')
+                    needQuotes = true;
+            }
+        }
+        if (needQuotes) {
+            return "\"" + buf + "\"";
+        } else {
+            return buf;
+        }
+    };
+
+    // 1) write header row
+    for (int col = 0; col < list.x; ++col) {
+        out << escapeField(list.fieldHead[col]);
+        if (col + 1 < list.x) out << ',';
+    }
+    out << '\n';
+
+    // 2) write each data row
+    Node* cur = list.head;
+    while (cur) {
+        for (int col = 0; col < list.x; ++col) {
+            out << escapeField(cur->data[col]);
+            if (col + 1 < list.x) out << ',';
+        }
+        out << '\n';
+        cur = cur->next;
+    }
+
+    cout << "Wrote cleaned CSV to: " << outPath << "\n";
+}
+
+
 int main()
 {
-    printf("Hello, World!\n");
+    string filename = "reviews.csv";
+    
+    LinkedList list;
+    if (!list.loadFromCSV(filename)) {
+        cerr << "Error: Cannot load CSV file.\n";
+        return 1;
+    }
+   
+    cout << list.y << " rows read\n";
+    // clean out rows with any bad cell
+    dropCells(list);
+
+    //write into CSV
+    writeCleanCSV(list, filename);
+
+    cout << "Cleaned list has " << list.y << " valid rows.\n";
+    
+    // … now you can sort/search the clean list …
+
+    return 0;
+
+
 }
 
 

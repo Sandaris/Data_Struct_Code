@@ -8,12 +8,12 @@
 int main() 
 {
     LinkedList list;
-    if (!list.loadFromCSV("cleaned_transactions.csv")) 
+    if (!list.loadFromCSV("cleaned_reviews.csv")) 
     {
         return 1;
     }
 
-    bubbleSort(list, "Product");
+    bubbleSort(list, "Product ID");
     //list.printForward();
 
 }

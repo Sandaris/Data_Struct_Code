@@ -84,62 +84,78 @@ struct LinkedList {
         }
 
     */
-    bool loadFromCSV(const string& filename) {
-        fs::path filePath = fs::current_path().parent_path()
-                            / "data" / filename;
-        ifstream in(filePath);
-        if (!in.is_open()) {
-            cerr << "Error: Cannot open " << filePath << "\n";
-            return false;
-        }
-
-        string line;
-        // --- 1) Read header line and count columns ---
-        if (!getline(in, line)) return false;
-        // count commas → columns = commas+1
-        x = 1;
-        for (char c : line) if (c == ',') ++x;
-        // allocate header array
-        fieldHead = new string[x];
-
-        // split header line into fieldHead[0..x-1]
-        {
-            int start = 0, col = 0;
-            for (int i = 0; i <= (int)line.size(); ++i) {
-                if (i == (int)line.size() || line[i] == ',') {
-                    fieldHead[col++] = line.substr(start, i - start);
-                    start = i + 1;
-                }
-            }
-        }
-
-        // --- 2) Read each subsequent row ---
-        while (getline(in, line)) {
-            if (line.empty()) continue;  // skip blank lines
-
-            Node* node = new Node(x);
-            int start = 0, col = 0;
-            for (int i = 0; i <= (int)line.size(); ++i) {
-                if (i == (int)line.size() || line[i] == ',') {
-                    // assign row value into node->data[col]
-                    node->data[col++] = line.substr(start, i - start);
-                    start = i + 1;
-                }
-            }
-
-            // link into the doubly linked list
-            if (!head) {
-                head = tail = node;
-            } else {
-                node->prev     = tail;
-                tail->next     = node;
-                tail           = node;
-            }
-            ++y;
-        }
-
-        return true;
-    }
+   bool loadFromCSV(const string& filename) 
+   {
+       fs::path filePath = fs::current_path().parent_path()
+                           / "data" / filename;
+       ifstream in(filePath);
+       if (!in.is_open()) {
+           cerr << "Error: Cannot open " << filePath << "\n";
+           return false;
+       }
+   
+       string line;
+       // --- 1) Read header line and count columns ---
+       if (!getline(in, line)) return false;
+       x = 1;
+       for (char c : line) if (c == ',') ++x;
+       fieldHead = new string[x];
+   
+       // --- 2) Split header, respecting quoted fields ---
+       {
+           size_t pos = 0;
+           for (int col = 0; col < x; ++col) {
+               if (pos < line.size() && line[pos] == '"') {
+                   // quoted field
+                   size_t end = line.find('"', pos + 1);
+                   fieldHead[col] = line.substr(pos + 1, end - pos - 1);
+                   pos = end + 1;                // move past closing quote
+                   if (pos < line.size() && line[pos] == ',') ++pos;
+               } else {
+                   // unquoted
+                   size_t comma = line.find(',', pos);
+                   if (comma == string::npos) comma = line.size();
+                   fieldHead[col] = line.substr(pos, comma - pos);
+                   pos = comma;
+                   if (pos < line.size() && line[pos] == ',') ++pos;
+               }
+           }
+       }
+   
+       // --- 3) Read each subsequent row, same logic ---
+       while (getline(in, line)) {
+           if (line.empty()) continue;
+   
+           Node* node = new Node(x);
+           size_t pos = 0;
+           for (int col = 0; col < x; ++col) {
+               if (pos < line.size() && line[pos] == '"') {
+                   size_t end = line.find('"', pos + 1);
+                   node->data[col] = line.substr(pos + 1, end - pos - 1);
+                   pos = end + 1;
+                   if (pos < line.size() && line[pos] == ',') ++pos;
+               } else {
+                   size_t comma = line.find(',', pos);
+                   if (comma == string::npos) comma = line.size();
+                   node->data[col] = line.substr(pos, comma - pos);
+                   pos = comma;
+                   if (pos < line.size() && line[pos] == ',') ++pos;
+               }
+           }
+   
+           // link into the doubly linked list
+           if (!head) {
+               head = tail = node;
+           } else {
+               node->prev = tail;
+               tail->next = node;
+               tail       = node;
+           }
+           ++y;
+       }
+   
+       return true;
+   }
 
     // Print header + all rows in forward order
     void printForward() const {
