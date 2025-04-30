@@ -30,30 +30,47 @@ int main()
 
     dataContainer2D cleaned_review_data = getData("cleaned_transactions.csv");
 
-    cout << "----------------------------------------" << endl;
+    // cout << "----------------------------------------" << endl;
 
-    dataContainer2D bubble_Container = cloneContainer(cleaned_review_data);
+    // dataContainer2D bubble_Container = cloneContainer(cleaned_review_data);
 
-    cout << "----------------------------------------" << endl;
+    // cout << "----------------------------------------" << endl;
+
+    // SortResult bubble_result = insertionSortArray(bubble_Container, 4, true);
+
+    // cout << "----------------------------------------" << endl;
+
+    // std::cout << "Bubble Sort took " << bubble_result.timeMicroseconds << " μs"<< " and made " << bubble_result.swapCount << " swaps.\n";
+
+    // cout << "----------------------------------------" << endl;\
     
-    SortResult bubble_result = bubbleSortArray(bubble_Container, 4, true);
+    // cout << cleaned_review_data.y << " rows read\n";
 
-    cout << "----------------------------------------" << endl;
+    // cout << "----------------------------------------" << endl;
 
-    std::cout << "Bubble Sort took " << bubble_result.timeMicroseconds << " μs"<< " and made " << bubble_result.swapCount << " swaps.\n";
+    // cout << "RAM used: " << bubble_result.memoryKBUsed << " KB\n";
+    
+    // cout << "----------------------------------------" << endl;
 
-    cout << "----------------------------------------" << endl;\
-    int i =0;
-    while(i <cleaned_review_data.y){
-        cout << bubble_Container.data[i][4] << endl;
-        i++;
+    // cout << "Manual estimated memory: " << bubble_result.manualEstimatedBytes << " bytes\n";
+
+    // cout << "----------------------------------------" << endl;
+
+    SearchResult meta;
+dataContainer2D filtered = linearSearchTwoFields(cleaned_review_data, 2, "Books", 5, "Debit Card", meta);
+
+int i, j = 0;
+
+for (i = 0; i < filtered.y; i++) {
+    for (j = 0; j < filtered.x; j++) {
+        cout << filtered.data[i][j] << " ";
     }
-    cout << cleaned_review_data.y << " rows read\n";
-    cout << "----------------------------------------" << endl;
-    cout << "----------------------------------------" << endl;
+    cout << endl;
+}
 
+std::cout << "Found " << meta.resultCount << " rows in " << meta.timeMicroseconds << " μs "
+          << "with " << meta.comparisons << " comparisons.\n";
 
-    freeContainer(bubble_Container);
     freeContainer(cleaned_review_data);
 
     return 0;
