@@ -8,6 +8,7 @@
 
 namespace fs = std::filesystem;
 using namespace std;
+using namespace std::chrono;
 
 // Node: holds one CSV row of x columns
 struct Node 
@@ -208,7 +209,7 @@ int bubbleSort(LinkedList& list, const std::string& columnName)
     }
 
     // 2) start timer & memory tracking
-    auto t0 = std::chrono::high_resolution_clock::now();
+    auto t0 = high_resolution_clock::now();
 
     // 3) bubble‐sort by swapping data pointers
     bool swapped;
@@ -223,8 +224,8 @@ int bubbleSort(LinkedList& list, const std::string& columnName)
     } while (swapped);
 
     // 4) Stop timer
-    auto t1 = std::chrono::high_resolution_clock::now();
-    auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(t1 - t0).count();
+    auto t1 = high_resolution_clock::now();
+    auto ms = duration_cast<milliseconds>(t1 - t0).count();
 
     // 5) Report elapsed time
     std::cout << "Selection sort on \"" << columnName
@@ -295,15 +296,15 @@ int mergeSortList(LinkedList& list, const std::string& columnName) {
     };
 
     // 3) START TIMER
-    auto t0 = std::chrono::high_resolution_clock::now();
+    auto t0 = high_resolution_clock::now();
 
     // 4) sort
     list.head = mergeSort(list.head);
 
     // 5) STOP TIMER & REPORT
     // 4) Stop timer
-    auto t1 = std::chrono::high_resolution_clock::now();
-    auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(t1 - t0).count();
+    auto t1 = high_resolution_clock::now();
+    auto ms = duration_cast<milliseconds>(t1 - t0).count();
 
     // 6) Report elapsed time
     std::cout << "Merge sort on \"" << columnName
@@ -342,7 +343,7 @@ int insertionSort(LinkedList& list, const std::string& columnName) {
     if (!list.head || !list.head->next) return 1 ;
 
     // 2) Start timer
-    auto t0 = std::chrono::high_resolution_clock::now();
+    auto t0 = high_resolution_clock::now();
 
     // 3) Perform insertion sort on the doubly-linked list
     Node* sorted = list.head;
@@ -375,8 +376,8 @@ int insertionSort(LinkedList& list, const std::string& columnName) {
     }
 
     // 4) Stop timer
-    auto t1 = std::chrono::high_resolution_clock::now();
-    auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(t1 - t0).count();
+    auto t1 = high_resolution_clock::now();
+    auto ms = duration_cast<milliseconds>(t1 - t0).count();
 
     // 5) Update list head & tail
     list.head = sorted;
@@ -411,7 +412,7 @@ int selectionSort(LinkedList& list, const std::string& columnName)
     if (!list.head || !list.head->next) return 1;
 
     // 2) Start timer
-    auto t0 = std::chrono::high_resolution_clock::now();
+    auto t0 = high_resolution_clock::now();
 
     // 3) Selection‐sort by swapping each node's data pointer
     for (Node* i = list.head; i; i = i->next) {
@@ -429,12 +430,54 @@ int selectionSort(LinkedList& list, const std::string& columnName)
     }
 
     // 4) Stop timer
-    auto t1 = std::chrono::high_resolution_clock::now();
-    auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(t1 - t0).count();
+    auto t1 = high_resolution_clock::now();
+    auto ms = duration_cast<milliseconds>(t1 - t0).count();
 
     // 5) Report elapsed time
     std::cout << "Selection sort on \"" << columnName
               << "\" took " << ms << " ms\n";
 
     return static_cast<int>(ms);
+}
+
+void linearSearch1Field(const LinkedList& list, const std::string& columnName, const std::string& searchValue) 
+{
+
+    auto start = high_resolution_clock::now();
+
+    int columnIndex = -1;
+
+    // Find the index of the column
+    for (int i = 0; i < list.x; ++i) {
+        if (list.fieldHead[i] == columnName) {
+            columnIndex = i;
+            break;
+        }
+    }
+
+    if (columnIndex == -1) {
+        cerr << "Error: Column '" << columnName << "' not found.\n";
+        return;
+    }
+
+    cout << "Results for " << columnName << " = " << searchValue << ":\n";
+    cout << string(50, '-') << "\n";
+
+    int matchCount = 0;
+    for (Node* cur = list.head; cur; cur = cur->next) {
+        if (cur->data[columnIndex] == searchValue) {
+            for (int i = 0; i < list.x; ++i) {
+                cout << cur->data[i] << (i + 1 < list.x ? " | " : "\n");
+            }
+            ++matchCount;
+        }
+    }
+
+    if (matchCount == 0) {
+        cout << "No matching results found.\n";
+    }
+
+    auto end = high_resolution_clock::now();
+    auto duration = duration_cast<milliseconds>(end - start).count();
+    cout << "\nTime taken for linear search: " << duration << " ms\n";
 }
