@@ -192,7 +192,7 @@ struct LinkedList
 */
 
 // ——————————————————
-void bubbleSort(LinkedList& list, const std::string& columnName) 
+int bubbleSort(LinkedList& list, const std::string& columnName) 
 {
     // 1) find the column index
     int colIndex = -1;
@@ -204,11 +204,11 @@ void bubbleSort(LinkedList& list, const std::string& columnName)
     }
     if (colIndex < 0) {
         std::cerr << "Error: column \"" << columnName << "\" not found.\n";
-        return;
+        return 0;
     }
 
     // 2) start timer & memory tracking
-    auto t0 = std::chrono::steady_clock::now();
+    auto t0 = std::chrono::high_resolution_clock::now();
 
     // 3) bubble‐sort by swapping data pointers
     bool swapped;
@@ -222,19 +222,21 @@ void bubbleSort(LinkedList& list, const std::string& columnName)
         }
     } while (swapped);
 
-    // 4) stop timer & memory tracking
-    auto t1 = std::chrono::steady_clock::now();
-    auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(t1 - t0);
+    // 4) Stop timer
+    auto t1 = std::chrono::high_resolution_clock::now();
+    auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(t1 - t0).count();
 
-    // 5) report
-    std::cout << "Bubble sort on \"" << columnName << "\" took "
-              << elapsed.count() << " ms\n";
+    // 5) Report elapsed time
+    std::cout << "Selection sort on \"" << columnName
+              << "\" took " << ms << " ms\n";
+
+    return static_cast<int>(ms);
 }
 
 
 
-void mergeSortList(LinkedList& list, const std::string& columnName) {
-    if (!list.head) return;
+int mergeSortList(LinkedList& list, const std::string& columnName) {
+    if (!list.head) return 0;
 
     // 1) find the column index
     int colIndex = -1;
@@ -246,7 +248,7 @@ void mergeSortList(LinkedList& list, const std::string& columnName) {
     }
     if (colIndex < 0) {
         std::cerr << "Error: column \"" << columnName << "\" not found.\n";
-        return;
+        return 0;
     }
 
     using NodePtr = Node*;
@@ -293,16 +295,19 @@ void mergeSortList(LinkedList& list, const std::string& columnName) {
     };
 
     // 3) START TIMER
-    auto t0 = std::chrono::steady_clock::now();
+    auto t0 = std::chrono::high_resolution_clock::now();
 
     // 4) sort
     list.head = mergeSort(list.head);
 
     // 5) STOP TIMER & REPORT
-    auto t1      = std::chrono::steady_clock::now();
-    auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(t1 - t0);
+    // 4) Stop timer
+    auto t1 = std::chrono::high_resolution_clock::now();
+    auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(t1 - t0).count();
+
+    // 6) Report elapsed time
     std::cout << "Merge sort on \"" << columnName
-              << "\" took " << elapsed.count() << " ms\n";
+              << "\" took " << ms << " ms\n";
 
     // 6) repair tail & update row count
     NodePtr cur = list.head, prev = nullptr;
@@ -314,9 +319,11 @@ void mergeSortList(LinkedList& list, const std::string& columnName) {
     }
     list.tail = prev;
     list.y    = count;
+
+    return static_cast<int>(ms);
 }
 
-void insertionSort(LinkedList& list, const std::string& columnName) {
+int insertionSort(LinkedList& list, const std::string& columnName) {
     
     // 1) Find column index
     int col = -1;
@@ -328,11 +335,11 @@ void insertionSort(LinkedList& list, const std::string& columnName) {
     }
     if (col < 0) {
         std::cerr << "Error: column \"" << columnName << "\" not found.\n";
-        return;
+        return 0;
     }
 
     // nothing to sort if empty or single node
-    if (!list.head || !list.head->next) return;
+    if (!list.head || !list.head->next) return 0 ;
 
     // 2) Start timer
     auto t0 = std::chrono::high_resolution_clock::now();
@@ -381,9 +388,11 @@ void insertionSort(LinkedList& list, const std::string& columnName) {
     // 6) Report elapsed time
     std::cout << "Insertion sort on \"" << columnName
               << "\" took " << ms << " ms\n";
+
+    return static_cast<int>(ms);
 }
 
-void selectionSort(LinkedList& list, const std::string& columnName) 
+int selectionSort(LinkedList& list, const std::string& columnName) 
 {
     // 1) Find column index
     int col = -1;
@@ -395,11 +404,11 @@ void selectionSort(LinkedList& list, const std::string& columnName)
     }
     if (col < 0) {
         std::cerr << "Error: column \"" << columnName << "\" not found.\n";
-        return;
+        return 0;
     }
 
     // nothing to do on empty or single‐node list
-    if (!list.head || !list.head->next) return;
+    if (!list.head || !list.head->next) return 0;
 
     // 2) Start timer
     auto t0 = std::chrono::high_resolution_clock::now();
@@ -426,4 +435,6 @@ void selectionSort(LinkedList& list, const std::string& columnName)
     // 5) Report elapsed time
     std::cout << "Selection sort on \"" << columnName
               << "\" took " << ms << " ms\n";
+
+    return static_cast<int>(ms);
 }
