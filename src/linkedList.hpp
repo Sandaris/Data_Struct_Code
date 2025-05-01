@@ -528,3 +528,98 @@ void linearSearchByTwoColumns(const LinkedList& list,
     cout << "\nTime taken for linear search: " << duration << " microseconds\n";
 }
 
+int binarySearch(LinkedList& list,
+                         const std::string& columnName,
+                         const std::string& key)
+{
+    // 1) find column index
+    int idx = -1;
+    for (int i = 0; i < list.x; ++i) {
+        if (list.fieldHead[i] == columnName) {
+            idx = i;
+            break;
+        }
+    }
+    if (idx < 0) {
+        std::cerr << "Error: Column \"" << columnName << "\" not found.\n";
+        return -1;
+    }
+
+    auto t0 = std::chrono::high_resolution_clock::now();
+
+    // 2) helper to find middle between start..end (inclusive)
+    auto getMiddle = [&](Node* start, Node* end) {
+        Node* slow = start;
+        Node* fast = start;
+        while (fast != end && fast->next != end) {
+            fast = fast->next->next;
+            slow = slow->next;
+        }
+        return slow;
+    };
+
+    // 3) binary-search for any one match
+    Node* low   = list.head;
+    Node* high  = list.tail;
+    Node* found = nullptr;
+
+
+    while (low && high) {
+        // ensure low ≤ high by walking from low to high
+        bool valid = false;
+        for (Node* p = low; p; p = p->next) {
+            if (p == high) { valid = true; break; }
+        }
+        if (!valid) break;
+
+        Node* mid = getMiddle(low, high);
+        if (mid->data[idx] == key) {
+            found = mid;
+            break;
+        }
+        else if (mid->data[idx] < key) {
+            low = mid->next;
+        }
+        else {
+            high = mid->prev;
+        }
+    }
+
+
+    // 5) Print results
+    if (!found) {
+        std::cout << "No results for " << columnName
+                  << " = " << key << "\n";
+        return 1;
+    }
+
+    // Walk back to first matching node
+    Node* first = found;
+    while (first->prev && first->prev->data[idx] == key) {
+        first = first->prev;
+    }
+
+    // Print header once
+    std::cout << "Results for " << columnName
+              << " = " << key << ":\n";
+    std::cout << std::string(50, '-') << "\n";
+
+    // Walk forward and print all matches
+    for (Node* p = first; p && p->data[idx] == key; p = p->next) {
+        for (int c = 0; c < list.x; ++c) {
+            std::cout << p->data[c]
+                      << (c + 1 < list.x ? " | " : "\n");
+        }
+    }
+
+    // 4) Stop timer
+    auto t1 = std::chrono::high_resolution_clock::now();
+    int ms = static_cast<int>(
+        std::chrono::duration_cast<std::chrono::milliseconds>(t1 - t0)
+        .count());
+
+    std::cout << "Binary search on \"" << columnName
+              << "\" took " << ms << " ms\n";
+
+    return static_cast<int>(ms);
+}

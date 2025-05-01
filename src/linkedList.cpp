@@ -28,8 +28,11 @@ int main()
     // cout << "Insertion Sort: " << val3 << "\n";
     // cout << "Selection Sort: " << val4 << "\n";
     // cout << "Sorting completed.\n";
+
+    insertionSort(list, "Product ID");
     
     linearSearch1Field(list, "Product ID", "PROD956");
 
+    binarySearch(list, "Product ID", "PROD956");
 
 }
