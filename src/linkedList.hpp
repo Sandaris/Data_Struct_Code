@@ -179,6 +179,49 @@ struct LinkedList
             }
         }
     }
+
+    int deleteRows(const std::string& columnName,
+                   const std::string& value)
+    {
+        using namespace std::chrono;
+        auto start = high_resolution_clock::now();
+
+        // find the index of the column
+        int colIdx = -1;
+        for (int i = 0; i < x; ++i) {
+            if (fieldHead[i] == columnName) {
+                colIdx = i;
+                break;
+            }
+        }
+        if (colIdx < 0) {
+            std::cerr << "Error: column '" << columnName << "' not found\n";
+            return 0;
+        }
+
+        // now delete matching nodes
+        Node* cur = head;
+        while (cur) {
+            Node* nxt = cur->next;
+            if (cur->data[colIdx] == value) {
+                if (cur->prev) cur->prev->next = cur->next;
+                else           head = cur->next;
+
+                if (cur->next) cur->next->prev = cur->prev;
+                else           tail = cur->prev;
+
+                delete cur;
+                --y;
+            }
+            cur = nxt;
+        }
+
+        auto end = high_resolution_clock::now();
+        auto duration = duration_cast<microseconds>(end - start).count();
+        std::cout << "Time taken for deletion: " << duration << " ms\n";
+        
+        return static_cast<int>(duration);
+    }
 };
 
 // ——————————————————
@@ -528,6 +571,18 @@ void linearSearchByTwoColumns(const LinkedList& list,
     cout << "\nTime taken for linear search: " << duration << " microseconds\n";
 }
 
+
+/*you will need to sort it first before u do the search
+
+    - call any of the sorting function first, e.g.:
+        insertionSort(list, "Product ID");
+        bubbleSort(list, "Product ID");
+        mergeSortList(list, "Product ID");
+        selectionSort(list, "Product ID");
+
+    - then call the binary search function in this way:
+        binarySearch(list, "Product ID", "PROD956");
+*/
 int binarySearch(LinkedList& list,
                          const std::string& columnName,
                          const std::string& key)

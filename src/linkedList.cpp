@@ -13,6 +13,9 @@ int main()
         return 1;
     }
 
+
+}
+
     // int val1 = bubbleSort(list, "Product ID");
 
     // int val2 = mergeSortList(list, "Product ID");
@@ -29,10 +32,14 @@ int main()
     // cout << "Selection Sort: " << val4 << "\n";
     // cout << "Sorting completed.\n";
 
-    insertionSort(list, "Product ID");
+    // insertionSort(list, "Product ID");
     
-    linearSearch1Field(list, "Product ID", "PROD956");
+    // linearSearch1Field(list, "Product ID", "PROD956");
 
-    binarySearch(list, "Product ID", "PROD956");
+    // //binarySearch(list, "Product ID", "PROD956");
 
-}
+    // list.deleteRows("Product ID", "PROD956");
+
+    // //std::cout << "Time taken for deletion: " << ms << " ms\n";
+
+    // linearSearch1Field(list, "Product ID", "PROD956");
