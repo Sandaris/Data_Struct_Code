@@ -866,9 +866,23 @@ void printDataContainer(dataContainer2D& dc)
 }
 
 
+/*    
+    You Basically just copy paste the code into the main function and run : 
 
+    LinkedList list;
+    if (!list.loadFromCSV("cleaned_reviews.csv")) 
+    {
+        return 1;
+    }
 
+    LinkedList filtered_result = list.linearSearch1Field("Rating", "1");
 
+    insertionSort(filtered_result, "Product ID");
+
+    LinkedList topWords = getTopFrequentWords(filtered_result, "Review Text", 10);
+
+    topWords.printForward();
+*/
 // top-N most frequent ASCII words in columnName
 // LinkedList getTopFrequentWords(const LinkedList& list,
 //                                const string& columnName,
