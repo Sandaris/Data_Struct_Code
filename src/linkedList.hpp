@@ -440,7 +440,7 @@ int selectionSort(LinkedList& list, const std::string& columnName)
     return static_cast<int>(ms);
 }
 
-void linearSearch1Field(const LinkedList& list, const std::string& columnName, const std::string& searchValue) 
+int linearSearch1Field(const LinkedList& list, const std::string& columnName, const std::string& searchValue) 
 {
 
     auto start = high_resolution_clock::now();
@@ -457,7 +457,7 @@ void linearSearch1Field(const LinkedList& list, const std::string& columnName, c
 
     if (columnIndex == -1) {
         cerr << "Error: Column '" << columnName << "' not found.\n";
-        return;
+        return 1;
     }
 
     cout << "Results for " << columnName << " = " << searchValue << ":\n";
@@ -480,4 +480,51 @@ void linearSearch1Field(const LinkedList& list, const std::string& columnName, c
     auto end = high_resolution_clock::now();
     auto duration = duration_cast<milliseconds>(end - start).count();
     cout << "\nTime taken for linear search: " << duration << " ms\n";
+
+    return static_cast<int>(duration);
 }
+
+
+void linearSearchByTwoColumns(const LinkedList& list,
+                               const std::string& columnName1, const std::string& value1,
+                               const std::string& columnName2, const std::string& value2) 
+{
+    auto start = high_resolution_clock::now();
+
+    int col1Index = -1;
+    int col2Index = -1;
+
+    // Find index of both columns
+    for (int i = 0; i < list.x; ++i) {
+        if (list.fieldHead[i] == columnName1) col1Index = i;
+        if (list.fieldHead[i] == columnName2) col2Index = i;
+    }
+
+    if (col1Index == -1 || col2Index == -1) {
+        cerr << "Error: One or both column names not found.\n";
+        return;
+    }
+
+    cout << "Results for (" << columnName1 << " = " << value1
+         << ") AND (" << columnName2 << " = " << value2 << "):\n";
+    cout << string(50, '-') << "\n";
+
+    int matchCount = 0;
+    for (Node* cur = list.head; cur; cur = cur->next) {
+        if (cur->data[col1Index] == value1 && cur->data[col2Index] == value2) {
+            for (int i = 0; i < list.x; ++i) {
+                cout << cur->data[i] << (i + 1 < list.x ? " | " : "\n");
+            }
+            ++matchCount;
+        }
+    }
+
+    if (matchCount == 0) {
+        cout << "No matching results found.\n";
+    }
+
+    auto end = high_resolution_clock::now();
+    auto duration = duration_cast<microseconds>(end - start).count();
+    cout << "\nTime taken for linear search: " << duration << " microseconds\n";
+}
+
