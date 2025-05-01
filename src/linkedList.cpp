@@ -8,13 +8,26 @@
 int main() 
 {
     LinkedList list;
-    if (!list.loadFromCSV("cleaned_transactions.csv")) 
+    if (!list.loadFromCSV("cleaned_reviews.csv")) 
     {
         return 1;
     }
-    LinkedList filtered_result = list.linearSearch1Field("Date", "03/07/2022");
+    // LinkedList filtered_result = list.linearSearch1Field("Rating", "1");
 
-    filtered_result.printForward();
+    // insertionSort(filtered_result, "Product ID");
+
+    // LinkedList topWords = getTopFrequentWords(filtered_result, "Review Text", 10);
+
+    // topWords.printForward();
+
+    // return 0;
+
+    LinkedList oneStar = list.linearSearch1Field("Rating","1");
+    dataContainer2D dc = getTopFrequentWordsDC(oneStar, "Review Text", 1);
+
+    printDataContainer(dc);
+
+    return 0;
 }
 
     // int val1 = bubbleSort(list, "Product ID");
