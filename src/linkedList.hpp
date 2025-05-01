@@ -222,6 +222,68 @@ struct LinkedList
         
         return static_cast<int>(duration);
     }
+
+    /*
+    call in this way:
+
+    LinkedList filtered_result = list.linearSearch1Field("Product ID", "PROD956");
+
+    then filter to check in: filtered_result.printForward();
+
+    */
+    LinkedList linearSearch1Field(const std::string& columnName, const std::string& searchValue) const
+    {
+        auto start = high_resolution_clock::now();
+
+        // 1) Prepare the result list (copy header + column count)
+        LinkedList result;
+        result.x = x;
+        result.y = 0;
+        result.fieldHead = new std::string[x];
+        for (int i = 0; i < x; ++i)
+            result.fieldHead[i] = fieldHead[i];
+
+        // 2) Find the index of the search column
+        int colIdx = -1;
+        for (int i = 0; i < x; ++i) {
+            if (fieldHead[i] == columnName) {
+                colIdx = i;
+                break;
+            }
+        }
+        if (colIdx < 0) {
+            std::cerr << "Error: Column '" << columnName << "' not found.\n";
+            return result;    // empty result
+        }
+
+        // 3) Walk through original list, copying matches
+        for (Node* cur = head; cur; cur = cur->next) {
+            if (cur->data[colIdx] == searchValue) {
+                // deep‐copy this row
+                Node* node = new Node(x);
+                for (int j = 0; j < x; ++j)
+                    node->data[j] = cur->data[j];
+
+                // link into result
+                if (!result.head) {
+                    result.head = result.tail = node;
+                } else {
+                    node->prev       = result.tail;
+                    result.tail->next = node;
+                    result.tail       = node;
+                }
+                ++result.y;
+            }
+        }
+
+        // 4) (optional) measure and print elapsed time
+        auto end      = high_resolution_clock::now();
+        auto duration = duration_cast<microseconds>(end - start).count();
+        printf("\nSearched \"%s = %s\" in %lld microseconds; found %d rows.\n",
+               columnName.c_str(), searchValue.c_str(), duration, result.y);
+
+        return result;  
+    }
 };
 
 // ——————————————————
@@ -570,6 +632,7 @@ void linearSearchByTwoColumns(const LinkedList& list,
     auto duration = duration_cast<microseconds>(end - start).count();
     cout << "\nTime taken for linear search: " << duration << " microseconds\n";
 }
+
 
 
 /*you will need to sort it first before u do the search

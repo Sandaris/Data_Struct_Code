@@ -8,12 +8,13 @@
 int main() 
 {
     LinkedList list;
-    if (!list.loadFromCSV("cleaned_reviews.csv")) 
+    if (!list.loadFromCSV("cleaned_transactions.csv")) 
     {
         return 1;
     }
+    LinkedList filtered_result = list.linearSearch1Field("Date", "03/07/2022");
 
-
+    filtered_result.printForward();
 }
 
     // int val1 = bubbleSort(list, "Product ID");
