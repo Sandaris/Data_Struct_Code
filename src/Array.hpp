@@ -53,6 +53,13 @@ struct SortResult {
     size_t memoryKBUsed = 0;
 };
 
+///////////////////////////////////// frequency Struct /////////////////////////////////////
+struct WordFrequency {
+    char** words;    // array of unique words
+    int* counts;     // corresponding frequency for each word
+    int size;        // current number of unique words stored
+    int capacity;    // current max capacity before resizing
+};
 ///////////////////////////////////// Windows Memory Tracker /////////////////////////////////////
 size_t getUsedMemoryKB() {
     PROCESS_MEMORY_COUNTERS memInfo;
@@ -105,6 +112,17 @@ dataContainer2D cloneContainer(const dataContainer2D& original) {
     return copy;
 }
 
+void freeFrequencyContainer(WordFrequency& wf) {
+    for (int i = 0; i < wf.size; ++i) {
+        free(wf.words[i]); // free each word string
+    }
+    delete[] wf.words;
+    delete[] wf.counts;
+    wf.words = nullptr;
+    wf.counts = nullptr;
+    wf.size = 0;
+    wf.capacity = 0;
+}
 ///////////////////////////////////// Read function /////////////////////////////////////////////
 char** splitCustom(const std::string& line, int expectedFields, int& count) {
     char** tokens = new char*[expectedFields];
@@ -554,10 +572,176 @@ dataContainer2D binarySearchOneField(
     return result;
 }
 
+///////////////////////////////////// frequency function /////////////////////////////////////
+WordFrequency countWordsFromField(const dataContainer2D& container, int fieldIndex) {
+    WordFrequency freq;
+    freq.size = 0;
+    freq.capacity = 100; // initial space
+    freq.words = new char*[freq.capacity];
+    freq.counts = new int[freq.capacity];
 
+    for (int i = 0; i < freq.capacity; ++i) {
+        freq.words[i] = nullptr;
+        freq.counts[i] = 0;
+    }
 
+    for (int i = 0; i < container.y; ++i) {
+        const char* line = container.data[i][fieldIndex];
+        std::string word;
+        
+        for (int j = 0; line[j] != '\0'; ++j) {
+            if (isalnum(line[j])) {
+                word += tolower(line[j]);
+            } else if (!word.empty()) {
+                // Add the word to the frequency list
+                bool found = false;
+                for (int k = 0; k < freq.size; ++k) {
+                    if (strcmp(freq.words[k], word.c_str()) == 0) {
+                        freq.counts[k]++;
+                        found = true;
+                        break;
+                    }
+                }
 
+                if (!found) {
+                    // Resize if needed
+                    if (freq.size >= freq.capacity) {
+                        int newCapacity = freq.capacity * 2;
+                        char** newWords = new char*[newCapacity];
+                        int* newCounts = new int[newCapacity];
 
+                        for (int k = 0; k < freq.size; ++k) {
+                            newWords[k] = freq.words[k];
+                            newCounts[k] = freq.counts[k];
+                        }
+                        delete[] freq.words;
+                        delete[] freq.counts;
+
+                        freq.words = newWords;
+                        freq.counts = newCounts;
+                        freq.capacity = newCapacity;
+                    }
+
+                    freq.words[freq.size] = strdup(word.c_str());
+                    freq.counts[freq.size] = 1;
+                    freq.size++;
+                }
+
+                word.clear();
+            }
+        }
+
+        // Catch last word if line doesn't end in punctuation
+        if (!word.empty()) {
+            bool found = false;
+            for (int k = 0; k < freq.size; ++k) {
+                if (strcmp(freq.words[k], word.c_str()) == 0) {
+                    freq.counts[k]++;
+                    found = true;
+                    break;
+                }
+            }
+
+            if (!found) {
+                if (freq.size >= freq.capacity) {
+                    int newCapacity = freq.capacity * 2;
+                    char** newWords = new char*[newCapacity];
+                    int* newCounts = new int[newCapacity];
+
+                    for (int k = 0; k < freq.size; ++k) {
+                        newWords[k] = freq.words[k];
+                        newCounts[k] = freq.counts[k];
+                    }
+                    delete[] freq.words;
+                    delete[] freq.counts;
+
+                    freq.words = newWords;
+                    freq.counts = newCounts;
+                    freq.capacity = newCapacity;
+                }
+
+                freq.words[freq.size] = strdup(word.c_str());
+                freq.counts[freq.size] = 1;
+                freq.size++;
+            }
+        }
+    }
+
+    return freq;
+}
+
+///////////////////////////////////// Insert function /////////////////////////////////////
+void insertRow(dataContainer2D& container, char** newRow) {
+    if (!newRow) return;
+
+    // Allocate new data array with +1 row
+    char*** newData = new char**[container.y + 1];
+
+    // Copy old data
+    for (int i = 0; i < container.y; ++i) {
+        newData[i] = container.data[i];
+    }
+
+    // Assign the new row
+    newData[container.y] = new char*[container.x];
+    for (int j = 0; j < container.x; ++j) {
+        newData[container.y][j] = strdup(newRow[j]); // deep copy
+    }
+
+    // Clean up old data pointer (not individual rows)
+    delete[] container.data;
+
+    // Update container
+    container.data = newData;
+    container.y++;
+}
+
+///////////////////////////////////// Delete function /////////////////////////////////////
+bool deleteRowByValue(dataContainer2D& container, int fieldIndex, const char* value) {
+    if (fieldIndex < 0 || fieldIndex >= container.x) return false;
+
+    for (int i = 0; i < container.y; ++i) {
+        if (strcmp(container.data[i][fieldIndex], value) == 0) {
+            // Free memory for the row
+            for (int j = 0; j < container.x; ++j) {
+                free(container.data[i][j]);
+            }
+            delete[] container.data[i];
+
+            // Shift remaining rows up
+            for (int k = i + 1; k < container.y; ++k) {
+                container.data[k - 1] = container.data[k];
+            }
+
+            container.y--;
+            return true; // only delete first match
+        }
+    }
+    return false; // not found
+}
+
+/*
+// 1. Create a new row
+char** newRow = new char*[cleaned_review_data.x];
+newRow[0] = strdup("CUST0000");
+newRow[1] = strdup("Mouse");
+newRow[2] = strdup("Books");
+newRow[3] = strdup("999.99");
+newRow[4] = strdup("30/04/2024");
+newRow[5] = strdup("Credit Card");
+
+// 2. Insert into container
+insertRow(cleaned_review_data, newRow);
+
+// 3. Delete row by value
+deleteRowByValue(cleaned_review_data, 0, "CUST4434");
+
+// Don't forget to free newRow to avoid memory leak
+for (int i = 0; i < cleaned_review_data.x; ++i) {
+    free(newRow[i]);
+}
+delete[] newRow;
+*/
 
 
 
