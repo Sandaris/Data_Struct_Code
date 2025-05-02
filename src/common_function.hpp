@@ -13,22 +13,87 @@ using fs::path;
 
 using namespace std;
 
+struct avgSortResult
+{
+    int avgTime = 0;
+    int avgMemory = 0;
+};
+
 void print_helo()
 {
     std::cout << "hello world\n";
 }
 
-void display_result(int val1, int val2, int val3)
-{
-    //code starts here
-//     Time ( average of 10 simulation)	
-//     linked	array
-// Sort	bubble	value1	value2
-// merge	value3	value4
-// search	linear	value5	value6
-// binary	value7	value8
+void printAll(
+    const avgSortResult &bubbleRes,
+    const avgSortResult &selectionRes,
+    const avgSortResult &insertionRes,
+    const avgSortResult &mergeRes,
+    const avgSortResult &linearRes,
+    const avgSortResult &binaryRes,
+    const avgSortResult &deleteRes,
+    const avgSortResult &insertRes
+) {
+    // 1) human‐readable labels
+    const char* names[] = {
+        "Bubble Sort", "Selection Sort", "Insertion Sort", "Merge Sort",
+        "Linear Search","Binary Search",  "Delete",          "Insert"
+    };
 
+    // 2) parallel results array
+    const avgSortResult results[] = {
+        bubbleRes,    selectionRes, insertionRes, mergeRes,
+        linearRes,    binaryRes,    deleteRes,    insertRes
+    };
+
+    constexpr int COL1 = 18;
+    constexpr int COL2 = 12;
+    // total width = sum of column-widths + one '|' per column boundary (4 of them)
+    const int TOTAL_W = COL1 + COL2 + COL2 + 4;
+
+    // one-time left-align
+    std::cout << std::left;
+
+    // Header
+    std::cout << "| " << std::string(TOTAL_W, '-') << "|\n";
+    std::cout
+      << "| " << std::setw(COL1) << "Algorithm"
+      << "| " << std::setw(COL2) << "Time (ms)"
+      << "| " << std::setw(COL2) << "Memory (KB)"
+      << "|\n"
+      << "| " << std::string(TOTAL_W, '-') << "|\n";
+
+    // 4 sorts
+    for (int i = 0; i < 4; ++i) {
+        std::cout
+          << "| " << std::setw(COL1) << names[i]
+          << "| " << std::setw(COL2) << results[i].avgTime
+          << "| " << std::setw(COL2) << results[i].avgMemory
+          << "|\n";
+    }
+    std::cout << "| " << std::string(TOTAL_W, '-') << "|\n";
+
+    // 2 searches
+    for (int i = 4; i < 6; ++i) {
+        std::cout
+          << "| " << std::setw(COL1) << names[i]
+          << "| " << std::setw(COL2) << results[i].avgTime
+          << "| " << std::setw(COL2) << results[i].avgMemory
+          << "|\n";
+    }
+    std::cout << "| " << std::string(TOTAL_W, '-') << "|\n";
+
+    // delete & insert
+    for (int i = 6; i < 8; ++i) {
+        std::cout
+          << "| " << std::setw(COL1) << names[i]
+          << "| " << std::setw(COL2) << results[i].avgTime
+          << "| " << std::setw(COL2) << results[i].avgMemory
+          << "|\n";
+    }
+    std::cout << "| " << std::string(TOTAL_W, '-') << "|\n";
 }
+
 
 /**
  * \brief Read a CSV file and return its content as a string
@@ -56,5 +121,6 @@ string readCSVFile(const string& filename)
 
     return buffer.str();
 }
+
 
 

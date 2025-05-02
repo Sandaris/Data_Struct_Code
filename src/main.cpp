@@ -26,9 +26,9 @@ int main()
     //     cout << line << endl;
     // }
     
-    cout << "----------------------------------------" << endl;
+    // cout << "----------------------------------------" << endl;
 
-    dataContainer2D cleaned_review_data = getData("cleaned_transactions.csv");
+    // dataContainer2D cleaned_review_data = getData("cleaned_transactions.csv");
 
     // cout << "----------------------------------------" << endl;
 
@@ -56,22 +56,42 @@ int main()
 
     // cout << "----------------------------------------" << endl;
 
-    SearchResult meta;
-dataContainer2D filtered = linearSearchTwoFields(cleaned_review_data, 2, "Books", 5, "Debit Card", meta);
+//     SearchResult meta;
+// dataContainer2D filtered = linearSearchTwoFields(cleaned_review_data, 2, "Books", 5, "Debit Card", meta);
 
-int i, j = 0;
+// int i, j = 0;
 
-for (i = 0; i < filtered.y; i++) {
-    for (j = 0; j < filtered.x; j++) {
-        cout << filtered.data[i][j] << " ";
-    }
-    cout << endl;
-}
+// for (i = 0; i < filtered.y; i++) {
+//     for (j = 0; j < filtered.x; j++) {
+//         cout << filtered.data[i][j] << " ";
+//     }
+//     cout << endl;
+// }
 
-std::cout << "Found " << meta.resultCount << " rows in " << meta.timeMicroseconds << " μs "
-          << "with " << meta.comparisons << " comparisons.\n";
+// std::cout << "Found " << meta.resultCount << " rows in " << meta.timeMicroseconds << " μs "
+//           << "with " << meta.comparisons << " comparisons.\n";
 
-    freeContainer(cleaned_review_data);
+//     freeContainer(cleaned_review_data);
 
-    return 0;
+//     return 0;
+
+        // ───── Dummy values for testing ─────
+        avgSortResult bubbleRes    { 250, 1024 };
+        avgSortResult selectionRes { 220,  980 };
+        avgSortResult insertionRes { 200,  950 };
+        avgSortResult mergeRes     {  50, 2048 };
+    
+        avgSortResult linearRes    {  30,  512 };
+        avgSortResult binaryRes    {   5,  256 };
+    
+        avgSortResult deleteRes    {  10,  128 };
+        avgSortResult insertRes    {  15,  128 };
+        // ───────────────────────────────────
+    
+        printAll(
+            bubbleRes, selectionRes, insertionRes, mergeRes,
+            linearRes, binaryRes,   deleteRes,    insertRes
+        );
+        return 0;
+
 }
