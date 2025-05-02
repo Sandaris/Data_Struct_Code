@@ -1,5 +1,4 @@
- ///////////////////////////////////// Array file for sort algorithm and search algorithm /////////////////////////////////////
-
+ ///////////////////////////////////// Array file for sort algorithm and search algorithm ///////////////////////////////////// 
  #include <chrono>      // For timing
 #include <cstring>
 #include <string>
@@ -556,20 +555,138 @@ dataContainer2D binarySearchOneField(
 
 
 
+dataContainer2D writeNewLines(dataContainer2D dc, const char* newValues[], int recordLen) {
+    // 1) Validation: must match number of columns
+    if (recordLen != dc.x) {
+        std::cerr << "Error: expected " << dc.x
+                  << " values but got " << recordLen << "\n";
+        dc.error = -1;
+        return dc;
+    }
 
+    // 2) Allocate new array of row-pointers, size y+1
+    char*** newData = new char**[dc.y + 1];
 
+    // 3) Copy existing row pointers
+    for (int i = 0; i < dc.y; ++i) {
+        newData[i] = dc.data[i];
+    }
 
+    // 4) Allocate space for the new row
+    char** newRow = new char*[dc.x];
+    for (int j = 0; j < dc.x; ++j) {
+        // duplicate each string
+        newRow[j] = strdup(newValues[j]);
+    }
+    newData[dc.y] = newRow;
 
+    // 5) Clean up old “data” array (but not the row contents)
+    delete[] dc.data;
 
+    // 6) Update container and return
+    dc.data = newData;
+    dc.y  += 1;
+    return dc;
+}
 
+dataContainer2D deleteRecord(dataContainer2D dc, const char* columnName, const char* key) {
+    // 1) find column index
+    int colIdx = -1;
+    for (int j = 0; j < dc.x; ++j) {
+        if (std::strcmp(dc.fields[j], columnName) == 0) {
+            colIdx = j;
+            break;
+        }
+    }
+    if (colIdx < 0) {
+        std::cerr << "Error: column \"" << columnName << "\" not found.\n";
+        dc.error = -1;
+        return dc;
+    }
 
+    // 2) locate the row to delete
+    int delRow = -1;
+    for (int i = 0; i < dc.y; ++i) {
+        if (std::strcmp(dc.data[i][colIdx], key) == 0) {
+            delRow = i;
+            break;
+        }
+    }
+    if (delRow < 0) {
+        std::cerr << "Error: no record with " << columnName << " == \"" << key << "\".\n";
+        dc.error = 1;
+        return dc;
+    }
 
+    // 3) free the contents of that row
+    for (int j = 0; j < dc.x; ++j) {
+        free(dc.data[delRow][j]);   // each cell was strdup'd
+    }
+    delete[] dc.data[delRow];
 
+    // 4) build a new data-pointer-array of size y-1
+    char*** newData = new char**[dc.y - 1];
+    for (int i = 0, k = 0; i < dc.y; ++i) {
+        if (i == delRow) continue;
+        newData[k++] = dc.data[i];
+    }
 
+    // 5) delete old pointer array and update container
+    delete[] dc.data;
+    dc.data = newData;
+    dc.y  -= 1;
+    return dc;
+}
 
+dataContainer2D deleteAllRecords(dataContainer2D dc, const char* columnName, const char* key) {
+    // 1) find column index
+    int colIdx = -1;
+    for (int j = 0; j < dc.x; ++j) {
+        if (std::strcmp(dc.fields[j], columnName) == 0) {
+            colIdx = j;
+            break;
+        }
+    }
+    if (colIdx < 0) {
+        std::cerr << "Error: column \"" << columnName << "\" not found.\n";
+        dc.error = -1;
+        return dc;
+    }
 
+    // 2) count how many rows match
+    int matchCount = 0;
+    for (int i = 0; i < dc.y; ++i) {
+        if (std::strcmp(dc.data[i][colIdx], key) == 0) {
+            ++matchCount;
+        }
+    }
+    if (matchCount == 0) {
+        std::cerr << "Error: no records with " << columnName 
+                  << " == \"" << key << "\" found.\n";
+        dc.error = 1;
+        return dc;
+    }
 
+    // 3) build a new data-pointer-array of size y - matchCount
+    int newY = dc.y - matchCount;
+    char*** newData = new char**[newY];
 
+    // 4) copy over non-matching rows, free matching ones
+    for (int i = 0, k = 0; i < dc.y; ++i) {
+        if (std::strcmp(dc.data[i][colIdx], key) == 0) {
+            // free this row
+            for (int j = 0; j < dc.x; ++j) {
+                free(dc.data[i][j]); 
+            }
+            delete[] dc.data[i];
+        } else {
+            newData[k++] = dc.data[i];
+        }
+    }
 
-
-
+    // 5) delete old pointer array, update container
+    delete[] dc.data;
+    dc.data = newData;
+    dc.y    = newY;
+    return dc;
+}
