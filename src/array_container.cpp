@@ -5,17 +5,19 @@
 #include <filesystem>
 
 #include "common_function.hpp"
-#include "linkedList.hpp"
+// #include "linkedList.hpp"
 #include "Array.hpp"
+
+using namespace std;
 
 void array_questionOne(){
     dataContainer2D ct_data = getData("cleaned_transactions.csv");
-    dataContainer2D cr_data = getData("cleaned_reveiws.csv");
+    dataContainer2D cr_data = getData("cleaned_reviews.csv");
 
-    dataContainer2D bubbleData = cloneContainer(ct_data);
-    dataContainer2D insertionData = cloneContainer(ct_data);
-    dataContainer2D selectionData = cloneContainer(ct_data);
-    dataContainer2D mergeData = cloneContainer(ct_data);
+    dataContainer2D bubbleData = cloneContainer2D(ct_data);
+    dataContainer2D insertionData = cloneContainer2D(ct_data);
+    dataContainer2D selectionData = cloneContainer2D(ct_data);
+    dataContainer2D mergeData = cloneContainer2D(ct_data);
 
     SortResult bubbleResult = bubbleSortArray(bubbleData, 4, true);
     SortResult insertionResult = insertionSortArray(insertionData, 4, true);
@@ -51,13 +53,13 @@ void array_questionTwo(){
 
     SearchResult FirstLinerSearchResult, SecondLinearSearchResult, FirstBinarySearchResult, SecondBinarySearchResult;
     
-    dataContainer2D FirstLinerSearch = linearSearchOneField(ct_data, 2, "Electronics", FirstLinerSearchResult);
-    dataContainer2D SecondLinearSearch = linearSearchOneField(FirstLinerSearch, 5, "Credit Card", SecondLinearSearchResult);
+    dataContainer2D FirstLinerSearch = Array_LinearSearch(ct_data, 2, "Electronics", FirstLinerSearchResult);
+    dataContainer2D SecondLinearSearch = Array_LinearSearch(FirstLinerSearch, 5, "Credit Card", SecondLinearSearchResult);
 
     bubbleSortArray(ct_data, 2, true);
-    dataContainer2D FirstBinarySearch = binarySearchOneField(ct_data, 2, "Electronics", FirstBinarySearchResult);
+    dataContainer2D FirstBinarySearch = Array_BinarySearch(ct_data, 2, "Electronics", FirstBinarySearchResult);
     bubbleSortArray(FirstBinarySearch, 5, true);
-    dataContainer2D SecondBinarySearch = binarySearchOneField(FirstBinarySearch, 5, "Credit Card", SecondBinarySearchResult);
+    dataContainer2D SecondBinarySearch = Array_BinarySearch(FirstBinarySearch, 5, "Credit Card", SecondBinarySearchResult);
 
     float LinearPercentage = (SecondLinearSearch.y / (float)FirstLinerSearch.y)*100;
     int totalLineartime = FirstLinerSearchResult.timeMicroseconds + SecondLinearSearchResult.timeMicroseconds;
@@ -77,6 +79,9 @@ void array_questionTwo(){
     cout << "Linear Search Time: " << totalLineartime << endl;
     cout << "Binary Search Time: " << totalBinarytime << endl;
     cout << "-----------------------------------------" << endl;
+    cout << "memory Used by Linear Search: " << FirstLinerSearchResult.memoryUsed << endl;
+    cout << "memory Used by Binary Search: " << FirstBinarySearchResult.memoryUsed << endl;
+    cout << "-----------------------------------------" << endl;
 
     freeContainer(FirstLinerSearch);
     freeContainer(SecondLinearSearch);
@@ -89,9 +94,9 @@ void array_questionThree(){
     dataContainer2D cr_data = getData("cleaned_reviews.csv");
 
     SearchResult OneStarResult;
-    dataContainer2D OneStar = linearSearchOneField(cr_data, 2, "1", OneStarResult);
+    dataContainer2D OneStar = Array_LinearSearch(cr_data, 2, "1", OneStarResult);
 
-    WordFrequency wf = countWordsFromField(OneStar, 3);
+    WordFrequency wf = getWordFrequencyArray(OneStar, 3);
 
     cout << "-----------------------------------------" << endl;
     cout << "Number of reviews in cleaned_reviews.csv: " << cr_data.y << endl;
@@ -109,23 +114,11 @@ void array_questionThree(){
 }
 
 int main(){
-    int i = 0;
-    cout << "Enter question number: " << endl;
-    cin >> i;
-    switch(i){
-        case 1:
+
             array_questionOne();
-            break;
-        case 2:
             array_questionTwo();
-            break;
-        case 3:
             array_questionThree();
-            break;
-        default:
-            cout << "Invalid input" << endl;
-            break;
-    }
+         
     return 0;
 }
 

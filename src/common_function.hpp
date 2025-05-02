@@ -4,6 +4,14 @@
 #include <stdexcept>
 #include <sstream>
 #include <cstring>
+#ifndef COMMON_FUNCTION_HPP
+#define COMMON_FUNCTION_HPP
+
+#include <chrono>
+#include <windows.h>
+#include <psapi.h>
+#pragma comment(lib, "psapi.lib")
+
 
 //#include "linkedList.hpp"
 
@@ -13,6 +21,33 @@ using fs::path;
 
 using namespace std;
 
+///////////////////////////////////// SearchResult Struct /////////////////////////////////////
+struct SearchResult {
+    long long timeMicroseconds = 0;
+    int resultCount = 0;
+    size_t memoryUsed = 0;
+};
+// 1-field linear search
+// Matches fieldX == valueX
+// Returns a new container with matching rows
+
+///////////////////////////////////// SortResult Struct /////////////////////////////////////
+struct SortResult {
+    long long timeMicroseconds;
+    size_t memoryKBUsed = 0;
+};
+
+///////////////////////////////////// frequency Struct /////////////////////////////////////
+struct WordFrequency {
+    char** words;                  // array of unique words
+    int* counts;                   // corresponding frequency for each word
+    int size;                      // current number of unique words stored
+    int capacity;                  // current max capacity before resizing
+    long long timeMicroseconds;   // time taken to compute
+    size_t memoryUsed;  // manually tracked memory usage
+};
+
+///////////////////////////////////// avgSortResult Struct /////////////////////////////////////
 struct avgSortResult
 {
     int avgTime = 0;
@@ -122,5 +157,28 @@ string readCSVFile(const string& filename)
     return buffer.str();
 }
 
+///////////////////////////////////// Windows Memory Tracker /////////////////////////////////////
+size_t getUsedMemoryBytes() {
+    PROCESS_MEMORY_COUNTERS memInfo;
+    GetProcessMemoryInfo(GetCurrentProcess(), &memInfo, sizeof(memInfo));
+    return memInfo.WorkingSetSize;
+}
+
+size_t getUsedMemoryKB() { 
+    return getUsedMemoryBytes() / 1024; 
+}
+
+///////////////////////////////////// Timer Function /////////////////////////////////////
+struct Timer {
+    std::chrono::steady_clock::time_point start, end;
+
+    void begin() { start = std::chrono::steady_clock::now(); }
+    void finish() { end = std::chrono::steady_clock::now(); }
+
+    long long getDurationMicroseconds() const {
+        return std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+    }
+};
 
 
+#endif
