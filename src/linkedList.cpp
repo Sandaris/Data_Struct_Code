@@ -7,11 +7,14 @@
 
 int main() 
 {
+    menu();
+}
 
-    ////////////////////////////  Q1   //////////////////////////////////////////////
+// //////////////////////////  Q1   //////////////////////////////////////////////
 
     // LinkedList list;
     // LinkedList list2;
+
     // LinkedList list3;
     // LinkedList list4;
     // if (!list.loadFromCSV("cleaned_transactions.csv")) 
@@ -50,7 +53,7 @@ int main()
     // cout << "Total number of transactions: " << list.y << "\n";
 
 
-    ////////////////////////////  Q2   //////////////////////////////////////////////
+    // //////////////////////////  Q2   //////////////////////////////////////////////
 
 
     // LinkedList list;
@@ -71,7 +74,7 @@ int main()
     // cout << "Percentage of Credit Card in Electronics: " 
     //      << (static_cast<double>(onlyElectronicsNCreditCard.y) / onlyElectronics.y) * 100 << "%\n";
 
-    ////////////////////////////  Q3   //////////////////////////////////////////////
+    // //////////////////////////  Q3   //////////////////////////////////////////////
 
     // LinkedList list;
     // if (!list.loadFromCSV("cleaned_reviews.csv")) 
@@ -85,5 +88,3 @@ int main()
     // printDataContainer(dc);
 
     // return 0;
-
-}

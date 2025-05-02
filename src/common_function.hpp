@@ -122,5 +122,66 @@ string readCSVFile(const string& filename)
     return buffer.str();
 }
 
+void menu()
+{
+    int choice;
+    do {
+        // Clear the terminal
+        #ifdef _WIN32
+            system("cls");
+        #else
+            system("clear");
+        #endif
 
+        cout << "1. Sort Customer by Date\n"
+             << "2. Percentage of Electronics that paid using Credit Card\n"
+             << "3. Most Frequent Word in 1 Star Rating\n"
+             << "4. Insert new row\n"
+             << "5. Delete a row\n"
+             << "6. Exit\n"
+             << "Enter your choice: ";
+        cin >> choice;
 
+        if (cin.fail() || choice < 1 || choice > 6) {
+            cin.clear(); // clear the error flag
+            cin.ignore(numeric_limits<streamsize>::max(), '\n'); // discard invalid input
+            system("cls");
+            cout << "Invalid choice. Please enter a number between 1 and 6. Press Enter to Continue...\n";
+            cin.get(); // wait for user to press Enter before clearing the screen
+        } else {
+            break; // valid input
+        }
+    } while (true);
+
+    // Perform action based on choice
+    if (choice == 1) 
+    {
+        // Call sorting function here
+        cout << "Sorting Customer by Date...\n";
+    }
+    else if (choice == 2) 
+    {
+        // Call percentage calculation function here
+        cout << "Calculating percentage of Electronics that paid using Credit Card...\n";
+    } 
+    else if (choice == 3) 
+    {
+        // Call most frequent word function here
+        cout << "Finding most frequent word in 1 Star Rating...\n";
+    } 
+    else if (choice == 4) 
+    {
+        // Call insert new row function here
+        cout << "Inserting new row...\n";
+    } 
+    else if (choice == 5) 
+    {
+        // Call delete a row function here
+        cout << "Deleting a row...\n";
+    } 
+    else if (choice == 6) 
+    {
+        cout << "Exiting...\n";
+        return;
+    }
+}
