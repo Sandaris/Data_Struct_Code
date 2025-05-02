@@ -92,6 +92,35 @@ int main()
             bubbleRes, selectionRes, insertionRes, mergeRes,
             linearRes, binaryRes,   deleteRes,    insertRes
         );
+
+    //     LinkedList original;
+    // original.loadFromCSV("cleaned_transactions.csv");
+    // LinkedList original2;
+    // original2.loadFromCSV("cleaned_reviews.csv");
+
+    // LinkedList clone = cloneList(original);
+
+    // SortResult result = selectionSortLinked(original, "Date");
+    // cout << "Time taken: " << result.timeMicroseconds << " microseconds\n";
+    // cout << "Memory used: " << result.memoryKBUsed << " bytes\n";
+
+    // SearchResult linearMeta;
+    // LinkedList filteredLinear = LL_linearSearch(original, "Category", "Electronics", linearMeta);
+    // std::cout << "Linear search took " << linearMeta.timeMicroseconds << " µs and found "
+    //       << linearMeta.resultCount << " rows.\n" << "Memory used: " << linearMeta.memoryUsed << " Kilo bytes\n";
+
+
+    //     WordFrequency wf = countTopWordsFromLinkedList(original2, "Review Text", 10);
+
+    //     for (int i = 0; i < wf.size; ++i) {
+    //         cout << wf.words[i] << " - " << wf.counts[i] << endl;
+    //     }
+    //     cout << "Time: " << wf.timeMicroseconds << " μs\n";
+    //     cout << "Memory: " << wf.memoryUsed << " bytes\n";
+    //     cout << "Size: " << wf.size << endl;
+        
+    //     freeFrequencyContainer(wf);
+
         return 0;
 
 }

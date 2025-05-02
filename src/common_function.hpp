@@ -21,6 +21,15 @@ using fs::path;
 
 using namespace std;
 
+///////////////////////////////////// Array Data Structure /////////////////////////////////////
+struct dataContainer2D {
+    int error = 0;
+    char** fields = nullptr;     // 1D array: fields
+    char*** data = nullptr;      // 2D array: data (rows and columns)
+    int x = 0;                   // number of columns
+    int y = 0;                   // number of rows
+};
+
 ///////////////////////////////////// SearchResult Struct /////////////////////////////////////
 struct SearchResult {
     long long timeMicroseconds = 0;
@@ -54,6 +63,63 @@ struct avgSortResult
     int avgMemory = 0;
 };
 
+///////////////////////////////////// Free Array Container Memory /////////////////////////////////////////////
+void freeContainer(dataContainer2D& container) {
+    if (container.fields != nullptr) {
+        for (int i = 0; i < container.x; ++i) {
+            if (container.fields[i] != nullptr) {
+                free(container.fields[i]);
+            }
+        }
+        delete[] container.fields;
+        container.fields = nullptr;
+    }
+
+    if (container.data != nullptr) {
+        for (int i = 0; i < container.y; ++i) {
+            if (container.data[i] != nullptr) {
+                for (int j = 0; j < container.x; ++j) {
+                    if (container.data[i][j] != nullptr) {
+                        free(container.data[i][j]);
+                    }
+                }
+                delete[] container.data[i];
+            }
+        }
+        delete[] container.data;
+        container.data = nullptr;
+    }
+
+    container.x = 0;
+    container.y = 0;
+}
+/**
+ * string filename = "filepath";
+ * 
+ * dataContainer2D container = getData(filename);
+ * container.error = 0; // 0: no error, 1: error
+ * container.x = number of columns
+ * container.y = number of rows
+ * container.fields[n] = array of column names
+ * container.data[n][n] = array of rows
+ * 
+ * 
+ * freeContainer(container);
+ */
+
+ ///////////////////////////////////// Free Frequency Container Memory /////////////////////////////////////////////
+ void freeFrequencyContainer(WordFrequency& wf) {
+    for (int i = 0; i < wf.size; ++i) {
+        free(wf.words[i]); // free each word string
+    }
+    delete[] wf.words;
+    delete[] wf.counts;
+    wf.words = nullptr;
+    wf.counts = nullptr;
+    wf.size = 0;
+    wf.capacity = 0;
+}
+/////////////////////////////////////////////////////////////////////////////////////////////////
 void print_helo()
 {
     std::cout << "hello world\n";
