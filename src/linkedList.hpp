@@ -4,8 +4,9 @@
 #include <functional>
 #include <filesystem>
 #include <unordered_map>
-//#include "common_function.hpp"
+#include "common_function.hpp"
 #include "Array.hpp"
+#include <regex>
 
 namespace fs = std::filesystem;
 using namespace std;
@@ -232,7 +233,7 @@ struct LinkedList
     then filter to check in: filtered_result.printForward();
 
     */
-    LinkedList linearSearch1Field(const string& columnName, const string& searchValue) const
+    LinkedList linearKeepRows(const string& columnName, const string& searchValue) const
     {
         auto start = high_resolution_clock::now();
 
@@ -284,6 +285,71 @@ struct LinkedList
                columnName.c_str(), searchValue.c_str(), duration, result.y);
 
         return result;  
+    }
+
+    void insertNewRowFromInput() {
+        if (!fieldHead || x == 0) {
+            cout << "Error: Header fields are not initialized.\n";
+            return;
+        }
+    
+        Node* newNode = new Node(x);
+        cout << "Enter data for the new row:\n";
+    
+        for (int i = 0; i < x; ++i) {
+            string value;
+            string field = fieldHead[i];
+    
+            while (true) {
+                cout << field << ": ";
+                getline(cin, value);
+    
+                bool valid = true;
+    
+                // Validation rules based on field name
+                if (field == "Date") {
+                    regex date_regex(R"(^\d{2}/\d{2}/\d{4}$)");
+                    valid = regex_match(value, date_regex);
+                    if (!valid) cout << "Format must be dd/mm/yyyy.\n";
+                }
+                else if (field == "Customer ID") {
+                    regex id_regex(R"(^CUST\d{4}$)");
+                    valid = regex_match(value, id_regex);
+                    if (!valid) cout << "Format must be CUSTXXXX.\n";
+                }
+                else if (field == "Product ID") {
+                    regex prod_regex(R"(^PROD\d{3}$)");
+                    valid = regex_match(value, prod_regex);
+                    if (!valid) cout << "Format must be PRODXXX.\n";
+                }
+                else if (field == "Price") {
+                    regex price_regex(R"(^\d+(\.\d{1,2})?$)");
+                    valid = regex_match(value, price_regex);
+                    if (!valid) cout << "Price must be a number with max 2 decimal places.\n";
+                }
+                else if (field == "Rating") {
+                    regex rating_regex(R"(^[1-5]$)");
+                    valid = regex_match(value, rating_regex);
+                    if (!valid) cout << "Rating must be an integer from 1 to 5.\n";
+                }
+    
+                if (valid) break;
+            }
+    
+            newNode->data[i] = value;
+        }
+    
+        // Append node to the list
+        if (!head) {
+            head = tail = newNode;
+        } else {
+            tail->next = newNode;
+            newNode->prev = tail;
+            tail = newNode;
+        }
+    
+        y++; // increment row count
+        cout << "New row successfully added. Total rows: " << y << "\n";
     }
 };
 

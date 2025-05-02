@@ -22,10 +22,12 @@ int main()
 
     // return 0;
 
-    LinkedList oneStar = list.linearSearch1Field("Rating","1");
-    dataContainer2D dc = getTopFrequentWordsDC(oneStar, "Review Text", 1);
+    /////////////////////////////////////////////////////////////
 
-    printDataContainer(dc);
+    LinkedList oneStar = list.linearKeepRows("Product ID", "PROD956");
+    oneStar.printForward();
+    oneStar.insertNewRowFromInput();
+    oneStar.printForward();
 
     return 0;
 }
@@ -57,3 +59,15 @@ int main()
     // //std::cout << "Time taken for deletion: " << ms << " ms\n";
 
     // linearSearch1Field(list, "Product ID", "PROD956");
+
+
+/* //word getter 
+    
+    LinkedList oneStar = list.linearKeepRows("Rating","1");
+    dataContainer2D dc = getTopFrequentWordsDC(oneStar, "Review Text", 1);
+
+    printDataContainer(dc);
+
+    return 0;
+
+*/
