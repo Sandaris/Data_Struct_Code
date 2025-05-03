@@ -1,3 +1,5 @@
+#pragma once
+
 #include <iostream>
 #include <string>
 #include <fstream>
@@ -7,8 +9,6 @@
 #include <limits>
 #include <iostream>
 #include <iomanip>
-#ifndef COMMON_FUNCTION_HPP
-#define COMMON_FUNCTION_HPP
 
 #include <chrono>
 #include <windows.h>
@@ -270,236 +270,236 @@ std::string center(const std::string &s, int width) {
     return std::string(left, ' ') + s + std::string(right, ' ');
 }
 
-void Question1()
-{
-     // your sample data
-     avgSortResult bubbleResLL       {220,  980};
-     avgSortResult bubbleResArray    {220,  980};
-     avgSortResult selectionResLL    {220,  980};
-     avgSortResult selectionResArray {220,  980};
-     avgSortResult insertionResLL    {200,  950};
-     avgSortResult insertionResArray {200,  950};
-     avgSortResult mergeResLL        { 50, 2048};
-     avgSortResult mergeResArray     { 50, 2048};
+// void Question1()
+// {
+//      // your sample data
+//      avgSortResult bubbleResLL       {220,  980};
+//      avgSortResult bubbleResArray    {220,  980};
+//      avgSortResult selectionResLL    {220,  980};
+//      avgSortResult selectionResArray {220,  980};
+//      avgSortResult insertionResLL    {200,  950};
+//      avgSortResult insertionResArray {200,  950};
+//      avgSortResult mergeResLL        { 50, 2048};
+//      avgSortResult mergeResArray     { 50, 2048};
  
-     // shorten to four algorithm names
-     const char* names[4] = {
-         "Bubble Sort",
-         "Selection Sort",
-         "Insertion Sort",
-         "Merge Sort"
-     };
+//      // shorten to four algorithm names
+//      const char* names[4] = {
+//          "Bubble Sort",
+//          "Selection Sort",
+//          "Insertion Sort",
+//          "Merge Sort"
+//      };
  
-     // split LL vs Array for easy looping
-     avgSortResult resultsLL[4]    = { bubbleResLL,    selectionResLL,
-                                       insertionResLL, mergeResLL };
-     avgSortResult resultsArr[4]   = { bubbleResArray, selectionResArray,
-                                       insertionResArray, mergeResArray };
+//      // split LL vs Array for easy looping
+//      avgSortResult resultsLL[4]    = { bubbleResLL,    selectionResLL,
+//                                        insertionResLL, mergeResLL };
+//      avgSortResult resultsArr[4]   = { bubbleResArray, selectionResArray,
+//                                        insertionResArray, mergeResArray };
  
-     // column widths
-     constexpr int COL1 = 15;  // Algorithm
-     constexpr int COL2 =  7;  // each numeric column
-     // total inner width = COL1 + 4 cols of COL2 + 5 separators ('|')
-     int innerW = COL1 + COL2*4 + 5;
-     std::string sep(innerW, '-');
+//      // column widths
+//      constexpr int COL1 = 15;  // Algorithm
+//      constexpr int COL2 =  7;  // each numeric column
+//      // total inner width = COL1 + 4 cols of COL2 + 5 separators ('|')
+//      int innerW = COL1 + COL2*4 + 5;
+//      std::string sep(innerW, '-');
  
-     // 1) top border
-     std::cout << sep << "\n";
+//      // 1) top border
+//      std::cout << sep << "\n";
  
-     // 2) centered title
-     std::cout << center("Average of 10 Simulations", innerW) << "\n";
+//      // 2) centered title
+//      std::cout << center("Average of 10 Simulations", innerW) << "\n";
  
-     // 3) underline
-     std::cout << sep << "\n";
+//      // 3) underline
+//      std::cout << sep << "\n";
  
-     // 4) two-group header: blank, [ LL ], [ Array ]
-     int grpW = COL2*2 + 1;  // spans two sub-columns plus the inner '|'
-     std::cout 
-         << std::setw(COL1) << "" 
-         << "|" << center("LL",    grpW)
-         << "|" << center("Array", grpW)
-         << "|\n";
+//      // 4) two-group header: blank, [ LL ], [ Array ]
+//      int grpW = COL2*2 + 1;  // spans two sub-columns plus the inner '|'
+//      std::cout 
+//          << std::setw(COL1) << "" 
+//          << "|" << center("LL",    grpW)
+//          << "|" << center("Array", grpW)
+//          << "|\n";
     
-    std::cout << std::setw(COL1);
+//     std::cout << std::setw(COL1);
  
-     // 5) sub-headers
-     std::cout
-         << std::setw(COL1) << std::left   << "Algorithm"
-         << "|" << std::setw(COL2) << std::right << "Time"
-         << "|" << std::setw(COL2)              << "Memory"
-         << "|" << std::setw(COL2)              << "Time"
-         << "|" << std::setw(COL2)              << "Memory"
-         << "|\n";
+//      // 5) sub-headers
+//      std::cout
+//          << std::setw(COL1) << std::left   << "Algorithm"
+//          << "|" << std::setw(COL2) << std::right << "Time"
+//          << "|" << std::setw(COL2)              << "Memory"
+//          << "|" << std::setw(COL2)              << "Time"
+//          << "|" << std::setw(COL2)              << "Memory"
+//          << "|\n";
  
-     // 6) separator
-     std::cout << sep << "\n";
+//      // 6) separator
+//      std::cout << sep << "\n";
  
-     // 7) data rows
-     for (int i = 0; i < 4; ++i) {
-         std::cout
-             << std::setw(COL1) << std::left   << names[i]
-             << "|" << std::setw(COL2) << std::right << resultsLL[i].avgTime
-             << "|" << std::setw(COL2)              << resultsLL[i].avgMemory
-             << "|" << std::setw(COL2)              << resultsArr[i].avgTime
-             << "|" << std::setw(COL2)              << resultsArr[i].avgMemory
-             << "|\n";
-     }
+//      // 7) data rows
+//      for (int i = 0; i < 4; ++i) {
+//          std::cout
+//              << std::setw(COL1) << std::left   << names[i]
+//              << "|" << std::setw(COL2) << std::right << resultsLL[i].avgTime
+//              << "|" << std::setw(COL2)              << resultsLL[i].avgMemory
+//              << "|" << std::setw(COL2)              << resultsArr[i].avgTime
+//              << "|" << std::setw(COL2)              << resultsArr[i].avgMemory
+//              << "|\n";
+//      }
  
-     // 8) bottom border
-     std::cout << sep << "\n";
-}
+//      // 8) bottom border
+//      std::cout << sep << "\n";
+// }
 
-void Question2()
-{
-    avgSortResult linearResLL    {  30,  512 };
-    avgSortResult linearResArray    {  30,  512 };
-    avgSortResult binaryResLL    {   5,  256 };
-    avgSortResult binaryResArray    {  30,  512 };
+// void Question2()
+// {
+//     avgSortResult linearResLL    {  30,  512 };
+//     avgSortResult linearResArray    {  30,  512 };
+//     avgSortResult binaryResLL    {   5,  256 };
+//     avgSortResult binaryResArray    {  30,  512 };
 
-    // shorten to four algorithm names
-    const char* names[2] = {
-        "Linear Search",
-        "Binary Search",
-    };
+//     // shorten to four algorithm names
+//     const char* names[2] = {
+//         "Linear Search",
+//         "Binary Search",
+//     };
 
-    // split LL vs Array for easy looping
-    avgSortResult resultsLL[2]    = { linearResLL,  binaryResLL};
-    avgSortResult resultsArr[2]   = { linearResArray, binaryResArray };
+//     // split LL vs Array for easy looping
+//     avgSortResult resultsLL[2]    = { linearResLL,  binaryResLL};
+//     avgSortResult resultsArr[2]   = { linearResArray, binaryResArray };
 
-    // column widths
-    constexpr int COL1 = 15;  // Algorithm
-    constexpr int COL2 =  7;  // each numeric column
-    // total inner width = COL1 + 4 cols of COL2 + 5 separators ('|')
-    int innerW = COL1 + COL2*4 + 5;
-    std::string sep(innerW, '-');
+//     // column widths
+//     constexpr int COL1 = 15;  // Algorithm
+//     constexpr int COL2 =  7;  // each numeric column
+//     // total inner width = COL1 + 4 cols of COL2 + 5 separators ('|')
+//     int innerW = COL1 + COL2*4 + 5;
+//     std::string sep(innerW, '-');
 
-    // 1) top border
-    std::cout << sep << "\n";
+//     // 1) top border
+//     std::cout << sep << "\n";
 
-    // 2) centered title
-    std::cout << center("Average of 10 Simulations", innerW) << "\n";
+//     // 2) centered title
+//     std::cout << center("Average of 10 Simulations", innerW) << "\n";
 
-    // 3) underline
-    std::cout << sep << "\n";
+//     // 3) underline
+//     std::cout << sep << "\n";
 
-    // 4) two-group header: blank, [ LL ], [ Array ]
-    int grpW = COL2*2 + 1;  // spans two sub-columns plus the inner '|'
-    std::cout 
-        << std::setw(COL1) << "" 
-        << "|" << center("LL",    grpW)
-        << "|" << center("Array", grpW)
-        << "|\n";
+//     // 4) two-group header: blank, [ LL ], [ Array ]
+//     int grpW = COL2*2 + 1;  // spans two sub-columns plus the inner '|'
+//     std::cout 
+//         << std::setw(COL1) << "" 
+//         << "|" << center("LL",    grpW)
+//         << "|" << center("Array", grpW)
+//         << "|\n";
    
-   std::cout << std::setw(COL1);
+//    std::cout << std::setw(COL1);
 
-    // 5) sub-headers
-    std::cout
-        << std::setw(COL1) << std::left   << "Algorithm"
-        << "|" << std::setw(COL2) << std::right << "Time"
-        << "|" << std::setw(COL2)              << "Memory"
-        << "|" << std::setw(COL2)              << "Time"
-        << "|" << std::setw(COL2)              << "Memory"
-        << "|\n";
+//     // 5) sub-headers
+//     std::cout
+//         << std::setw(COL1) << std::left   << "Algorithm"
+//         << "|" << std::setw(COL2) << std::right << "Time"
+//         << "|" << std::setw(COL2)              << "Memory"
+//         << "|" << std::setw(COL2)              << "Time"
+//         << "|" << std::setw(COL2)              << "Memory"
+//         << "|\n";
 
-    // 6) separator
-    std::cout << sep << "\n";
+//     // 6) separator
+//     std::cout << sep << "\n";
 
-    // 7) data rows
-    for (int i = 0; i < 2; ++i) {
-        std::cout
-            << std::setw(COL1) << std::left   << names[i]
-            << "|" << std::setw(COL2) << std::right << resultsLL[i].avgTime
-            << "|" << std::setw(COL2)              << resultsLL[i].avgMemory
-            << "|" << std::setw(COL2)              << resultsArr[i].avgTime
-            << "|" << std::setw(COL2)              << resultsArr[i].avgMemory
-            << "|\n";
-    }
+//     // 7) data rows
+//     for (int i = 0; i < 2; ++i) {
+//         std::cout
+//             << std::setw(COL1) << std::left   << names[i]
+//             << "|" << std::setw(COL2) << std::right << resultsLL[i].avgTime
+//             << "|" << std::setw(COL2)              << resultsLL[i].avgMemory
+//             << "|" << std::setw(COL2)              << resultsArr[i].avgTime
+//             << "|" << std::setw(COL2)              << resultsArr[i].avgMemory
+//             << "|\n";
+//     }
 
-    // 8) bottom border
-    std::cout << sep << "\n";
-}
-void Question3()
-{
-   //2 avgResult
-}
+//     // 8) bottom border
+//     std::cout << sep << "\n";
+// }
+// void Question3()
+// {
+//    //2 avgResult
+// }
 
-void Question_Insert()
-{
-   //8 sort result
-}
+// void Question_Insert()
+// {
+//    //8 sort result
+// }
 
-void Question_Delete()
-{
-   //8 sort result
-}
+// void Question_Delete()
+// {
+//    //8 sort result
+// }
 
-#endif
-void menu()
-{
-    while (true) {
-        clearScreen();
+// #endif
+// void menu()
+// {
+//     while (true) {
+//         clearScreen();
 
-        cout << "1. Sort Customer by Date\n"
-             << "2. Percentage of Electronics that paid using Credit Card\n"
-             << "3. Most Frequent Word in 1 Star Rating\n"
-             << "4. Insert new row\n"
-             << "5. Delete a row\n"
-             << "6. Exit\n"
-             << "Enter your choice (1-6): ";
+//         cout << "1. Sort Customer by Date\n"
+//              << "2. Percentage of Electronics that paid using Credit Card\n"
+//              << "3. Most Frequent Word in 1 Star Rating\n"
+//              << "4. Insert new row\n"
+//              << "5. Delete a row\n"
+//              << "6. Exit\n"
+//              << "Enter your choice (1-6): ";
 
-        int choice;
-        // validate numeric input
-        while (!(cin >> choice) || choice < 1 || choice > 6) {
-            cin.clear();
-            clearScreen();
-            cout << "Invalid choice. Please enter a number between 1 and 6.\n"
-                 << "Enter your choice (1-6): ";
-        }
+//         int choice;
+//         // validate numeric input
+//         while (!(cin >> choice) || choice < 1 || choice > 6) {
+//             cin.clear();
+//             clearScreen();
+//             cout << "Invalid choice. Please enter a number between 1 and 6.\n"
+//                  << "Enter your choice (1-6): ";
+//         }
 
-        clearScreen();
-        // dispatch
-        switch (choice) {
-            case 1:
-                cout << "Sorting Customer by Date...\n\n";
-                Question1();
-                break;
-            case 2:
-                cout << "Calculating percentage of Electronics that paid using Credit Card...\n\n";
-                Question2();
-                break;
-            case 3:
-                cout << "Finding most frequent word in 1 Star Rating...\n\n";
-                Question3();
-                break;
-            case 4:
-                cout << "Inserting new row...\n\n";
-                // your insertRowFunction();
-                break;
-            case 5:
-                cout << "Deleting a row...\n\n";
-                // your deleteRowFunction();
-                break;
-            case 6:
-                cout << "Exiting...\n";
-                return;
-        }
+//         clearScreen();
+//         // dispatch
+//         switch (choice) {
+//             case 1:
+//                 cout << "Sorting Customer by Date...\n\n";
+//                 Question1();
+//                 break;
+//             case 2:
+//                 cout << "Calculating percentage of Electronics that paid using Credit Card...\n\n";
+//                 Question2();
+//                 break;
+//             case 3:
+//                 cout << "Finding most frequent word in 1 Star Rating...\n\n";
+//                 Question3();
+//                 break;
+//             case 4:
+//                 cout << "Inserting new row...\n\n";
+//                 // your insertRowFunction();
+//                 break;
+//             case 5:
+//                 cout << "Deleting a row...\n\n";
+//                 // your deleteRowFunction();
+//                 break;
+//             case 6:
+//                 cout << "Exiting...\n";
+//                 return;
+//         }
 
-        // ask if we should loop again
-        char again;
-        do {
-            cout << "\nReturn to menu? (Y/N): ";
-            cin >> again;
-            cin.ignore(numeric_limits<streamsize>::max(), '\n');
-            again = tolower(again);
-        } while (again != 'y' && again != 'n');
+//         // ask if we should loop again
+//         char again;
+//         do {
+//             cout << "\nReturn to menu? (Y/N): ";
+//             cin >> again;
+//             cin.ignore(numeric_limits<streamsize>::max(), '\n');
+//             again = tolower(again);
+//         } while (again != 'y' && again != 'n');
 
-        if (again == 'n') {
-            cout << "Goodbye!\n";
-            break;
-        }
-        // else continue; next iteration will clearScreen() and redraw menu
-    }
-}
+//         if (again == 'n') {
+//             cout << "Goodbye!\n";
+//             break;
+//         }
+//         // else continue; next iteration will clearScreen() and redraw menu
+//     }
+// }
 
 
-#endif
+// #endif

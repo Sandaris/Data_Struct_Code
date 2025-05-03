@@ -1,3 +1,5 @@
+#pragma once
+
 #include <functional>
 #include <filesystem>
 #include <unordered_map>
@@ -163,7 +165,8 @@ struct LinkedList
    }
 
     // Print header + all rows in forward order
-    void printForward() const {
+    void printForward() const 
+    {
         // headers
         for (int i = 0; i < x; ++i) {
             cout << fieldHead[i]
@@ -178,6 +181,30 @@ struct LinkedList
             }
         }
     }
+
+    void printForward(int index) const {
+        // sanity check
+        if (index < 0 || index >= y) {
+            std::cerr << "Error: index " << index << " out of range (0–" << (y-1) << ")\n";
+            return;
+        }
+
+        cout << "test";
+        // walk to the desired node
+        Node* cur = head;
+        for (int i = 0; i < index; ++i) {
+            cur = cur->next;
+        }
+
+        cout << "test";
+        // print only that row
+        for (int i = 0; i < x; ++i) {
+            std::cout << cur->data[i]
+                      << (i+1 < x ? " | " : "\n");
+        }
+    }
+
+
 
 
     /*

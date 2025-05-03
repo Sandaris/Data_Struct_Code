@@ -1,16 +1,29 @@
+
+
 #include <iostream>
 #include <fstream>
 #include <string>
 #include <sstream>
 #include <filesystem>
 
-#include "LinkedList.hpp"
+#include "linkedList.hpp"
 #include "Array.hpp"
+#include "common_function.hpp"
 
 namespace fs = std::filesystem;
 using fs::path;
 
 using namespace std;
+
+/////////////////////////////CLEAR THE SCREEN ///////////////////////////////////////////////////////////////
+void clearScreen() {
+    #ifdef _WIN32
+        system("cls");
+    #else
+        system("clear");
+    #endif
+}
+
 
 void questionOne()
 {
@@ -125,7 +138,71 @@ void questionOne()
     cout << "-----------------------------------------" << endl;
     cout << "Number of transactions in cleaned_transactions.csv: " << original.y<< endl;
     cout << "-----------------------------------------" << endl;
-
+    
+    //      // shorten to four algorithm names
+    //      const char* names[4] = 
+    //      {
+    //         "Bubble Sort",
+    //         "Selection Sort",
+    //         "Insertion Sort",
+    //         "Merge Sort"
+    //     };
+    
+    //     // split LL vs Array for easy looping
+    //     avgSortResult resultsLL[4]    = { BubbleResultLL, InsertionResultLL, SelectionResultLL, MergeResultLL };
+    //     avgSortResult resultsArr[4]   = { BubbleResultArray, InsertionResultArray, SelectionResultArray, MergeResultArray };
+    
+    //     // column widths
+    //     constexpr int COL1 = 15;  // Algorithm
+    //     constexpr int COL2 =  7;  // each numeric column
+    //     // total inner width = COL1 + 4 cols of COL2 + 5 separators ('|')
+    //     int innerW = COL1 + COL2*4 + 5;
+    //     std::string sep(innerW, '-');
+    
+    //     // 1) top border
+    //     std::cout << sep << "\n";
+    
+    //     // 2) centered title
+    //     std::cout << center("Average of 10 Simulations", innerW) << "\n";
+    
+    //     // 3) underline
+    //     std::cout << sep << "\n";
+    
+    //     // 4) two-group header: blank, [ LL ], [ Array ]
+    //     int grpW = COL2*2 + 1;  // spans two sub-columns plus the inner '|'
+    //     std::cout 
+    //         << std::setw(COL1) << "" 
+    //         << "|" << center("LL",    grpW)
+    //         << "|" << center("Array", grpW)
+    //         << "|\n";
+       
+    //    std::cout << std::setw(COL1);
+    
+    //     // 5) sub-headers
+    //     std::cout
+    //         << std::setw(COL1) << std::left   << "Algorithm"
+    //         << "|" << std::setw(COL2) << std::right << "Time"
+    //         << "|" << std::setw(COL2)              << "Memory"
+    //         << "|" << std::setw(COL2)              << "Time"
+    //         << "|" << std::setw(COL2)              << "Memory"
+    //         << "|\n";
+    
+    //     // 6) separator
+    //     std::cout << sep << "\n";
+    
+    //     // 7) data rows
+    //     for (int i = 0; i < 4; ++i) {
+    //         std::cout
+    //             << std::setw(COL1) << std::left   << names[i]
+    //             << "|" << std::setw(COL2) << std::right << resultsLL[i].avgTime/10000
+    //             << "|" << std::setw(COL2)              << resultsLL[i].avgMemory
+    //             << "|" << std::setw(COL2)              << resultsArr[i].avgTime/10000
+    //             << "|" << std::setw(COL2)              << resultsArr[i].avgMemory
+    //             << "|\n";
+    //     }
+    
+    //     // 8) bottom border
+    //     std::cout << sep << "\n";
 }
 
 
@@ -169,8 +246,8 @@ void questionTwo(){
     cout << "Total Transactions: " << ct_data.y << endl;
     cout << "Linear - Result Count: " << arrayLinear.avgResultCount / 10 << " | %: " << arrayLinear.percentage << endl;
     cout << "Binary - Result Count: " << arrayBinary.avgResultCount / 10 << " | %: " << arrayBinary.percentage << endl;
-    cout << "Average Linear Time: " << arrayLinear.avgTime / 10 << " µs | Memory: " << arrayLinear.avgMemory / 10 << " bytes" << endl;
-    cout << "Average Binary Time: " << arrayBinary.avgTime / 10 << " µs | Memory: " << arrayBinary.avgMemory / 10 << " bytes" << endl;
+    cout << "Average Linear Time: " << arrayLinear.avgTime / 10 << " Micro Seconds | Memory: " << arrayLinear.avgMemory / 10 << " bytes" << endl;
+    cout << "Average Binary Time: " << arrayBinary.avgTime / 10 << " Micro Seconds | Memory: " << arrayBinary.avgMemory / 10 << " bytes" << endl;
     cout << "-----------------------------------------" << endl;    
 
     // Linked List
@@ -212,8 +289,8 @@ void questionTwo(){
     cout << "Total Transactions: " << original.y << endl;
     cout << "Linear - Result Count: " << listLinear.avgResultCount / 10 << " | %: " << listLinear.percentage << endl;
     cout << "Binary - Result Count: " << listBinary.avgResultCount / 10 << " | %: " << listBinary.percentage << endl;
-    cout << "Average Linear Time: " << listLinear.avgTime / 10 << " µs | Memory: " << listLinear.avgMemory / 10 << " bytes" << endl;
-    cout << "Average Binary Time: " << listBinary.avgTime / 10 << " µs | Memory: " << listBinary.avgMemory / 10 << " bytes" << endl;
+    cout << "Average Linear Time: " << listLinear.avgTime / 10 << " Micro Seconds | Memory: " << listLinear.avgMemory / 10 << " bytes" << endl;
+    cout << "Average Binary Time: " << listBinary.avgTime / 10 << " Micro Seconds | Memory: " << listBinary.avgMemory / 10 << " bytes" << endl;
     cout << "-----------------------------------------" << endl;
 
 }
@@ -245,7 +322,7 @@ void questionThree(){
         cout << wf.words[i] << ": " << wf.counts[i] << endl;
     }
     cout << "-----------------------------------------" << endl;
-    cout << "Time taken: " << wf.timeMicroseconds << " μs\n";
+    cout << "Time taken: " << wf.timeMicroseconds << " Micro Seconds\n";
     cout << "Estimated memory: " << wf.memoryUsed << " bytes\n";
     cout << "-----------------------------------------" << endl;
     // free container
@@ -277,7 +354,7 @@ void questionThree(){
         cout << wfLL.words[i] << ": " << wfLL.counts[i] << endl;
     }
     cout << "-----------------------------------------" << endl;
-    cout << "Time taken: " << wfLL.timeMicroseconds << " μs\n";
+    cout << "Time taken: " << wfLL.timeMicroseconds << " Micro Seconds\n";
     cout << "Estimated memory: " << wfLL.memoryUsed << " bytes\n";
     cout << "-----------------------------------------" << endl;
     // free container
@@ -312,7 +389,7 @@ void question_insert(){
         }
         cout << "\n";
     cout << "-----------------------------------------" << endl;
-    cout << "Time taken: " << ArrayInsertResult.time << " μs\n";
+    cout << "Time taken: " << ArrayInsertResult.time << " Micro Seconds\n";
     cout << "Estimated memory: " << ArrayInsertResult.memory << " bytes\n";
     cout << "-----------------------------------------" << endl;
 
@@ -333,11 +410,12 @@ void question_insert(){
     cout << "Total records before insert: " << original.y << "\n";
     cout << "Total records after insert: " << updatedLL.y << "\n";
     cout << "-----------------------------------------" << endl;
-    cout << " HOW TO PRINT LINE FOR LINK LIST ? " << endl;
+    //cout << " HOW TO PRINT LINE FOR LINK LIST ? " << endl;
     cout << "-----------------------------------------" << endl;
-    cout << "Time taken: " << LLInsertResult.time << " μs\n";
+    cout << "Time taken: " << LLInsertResult.time << " Micro Seconds\n";
     cout << "Estimated memory: " << LLInsertResult.memory << " bytes\n";
     cout << "-----------------------------------------" << endl;
+    //updatedLL.printForward(3373-1); // Print the 3373th row
 
 
 freeContainer(cr_data);
@@ -360,7 +438,7 @@ void question_delete(){
     cout << "Total records before delete: " << cr_data.y << "\n";
     cout << "Total records after delete: " << deletedData.y << "\n";
     cout << "-----------------------------------------" << endl;
-    cout << "Time taken: " << ArrayDeleteResult.time << " μs\n";
+    cout << "Time taken: " << ArrayDeleteResult.time << " Micro Seconds\n";
     cout << "Estimated memory: " << ArrayDeleteResult.memory << " bytes\n";
     cout << "-----------------------------------------" << endl;
 
@@ -379,7 +457,7 @@ void question_delete(){
     cout << "Total records before delete: " << originalList.y << "\n";
     cout << "Total records after delete: " << deletedLL.y << "\n";
     cout << "-----------------------------------------" << endl;
-    cout << "Time taken: " << LLDeleteResult.time << " μs\n";
+    cout << "Time taken: " << LLDeleteResult.time << " Micro Seconds\n";
     cout << "Estimated memory: " << LLDeleteResult.memory << " bytes\n";
     cout << "-----------------------------------------" << endl;
 
@@ -387,7 +465,74 @@ void question_delete(){
     freeContainer(deletedData);
 }
 
+void menu()
+{
+    while (true) {
+        clearScreen();
+
+        cout << "1. Sort Customer by Date\n"
+             << "2. Percentage of Electronics that paid using Credit Card\n"
+             << "3. Most Frequent Word in 1 Star Rating\n"
+             << "4. Insert new row\n"
+             << "5. Delete a row\n"
+             << "6. Exit\n"
+             << "Enter your choice (1-6): ";
+
+        int choice;
+        // validate numeric input
+        while (!(cin >> choice) || choice < 1 || choice > 6) {
+            cin.clear();
+            clearScreen();
+            cout << "Invalid choice. Please enter a number between 1 and 6.\n"
+                 << "Enter your choice (1-6): ";
+        }
+
+        clearScreen();
+        // dispatch
+        switch (choice) {
+            case 1:
+                cout << "Sorting Customer by Date...\n\n";
+                questionOne();
+                break;
+            case 2:
+                cout << "Calculating percentage of Electronics that paid using Credit Card...\n\n";
+                questionTwo();
+                break;
+            case 3:
+                cout << "Finding most frequent word in 1 Star Rating...\n\n";
+                questionThree();
+                break;
+            case 4:
+                cout << "Inserting new row...\n\n";
+                question_insert();
+                break;
+            case 5:
+                cout << "Deleting a row...\n\n";
+                question_delete();
+                break;
+            case 6:
+                cout << "Exiting...\n";
+                return;
+        }
+
+        // ask if we should loop again
+        char again;
+        do {
+            cout << "\nReturn to menu? (Y/N): ";
+            cin >> again;
+            //cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            again = tolower(again);
+        } while (again != 'y' && again != 'n');
+
+        if (again == 'n') {
+            cout << "Goodbye!\n";
+            break;
+        }
+        // else continue; next iteration will clearScreen() and redraw menu
+    }
+}
+
 int main() 
 {
-
-}   
+    menu();
+}  
