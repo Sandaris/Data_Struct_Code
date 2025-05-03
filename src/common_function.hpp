@@ -5,6 +5,8 @@
 #include <sstream>
 #include <cstring>
 #include <limits>
+#include <iostream>
+#include <iomanip>
 #ifndef COMMON_FUNCTION_HPP
 #define COMMON_FUNCTION_HPP
 
@@ -51,7 +53,7 @@ struct SortResult {
 struct WordFrequency {
     char** words;                  // array of unique words
     int* counts;                   // corresponding frequency for each word
-    int size;                      // current number of unique words stored
+    int size;                      // .x of data container
     int capacity;                  // current max capacity before resizing
     long long timeMicroseconds;   // time taken to compute
     size_t memoryUsed;  // manually tracked memory usage
@@ -63,6 +65,15 @@ struct avgSortResult
     int avgTime = 0;
     int avgMemory = 0;
 };
+
+/////////////////////////////CLEAR THE SCREEN ///////////////////////////////////////////////////////////////
+void clearScreen() {
+    #ifdef _WIN32
+        system("cls");
+    #else
+        system("clear");
+    #endif
+}
 
 ///////////////////////////////////// Free Array Container Memory /////////////////////////////////////////////
 void freeContainer(dataContainer2D& container) {
@@ -247,18 +258,182 @@ struct Timer {
     }
 };
 
+std::string center(const std::string &s, int width) {
+    if ((int)s.size() >= width) return s.substr(0, width);
+    int pad = width - s.size();
+    int left = pad/2;
+    int right = pad - left;
+    return std::string(left, ' ') + s + std::string(right, ' ');
+}
+
+void Question1()
+{
+     // your sample data
+     avgSortResult bubbleResLL       {220,  980};
+     avgSortResult bubbleResArray    {220,  980};
+     avgSortResult selectionResLL    {220,  980};
+     avgSortResult selectionResArray {220,  980};
+     avgSortResult insertionResLL    {200,  950};
+     avgSortResult insertionResArray {200,  950};
+     avgSortResult mergeResLL        { 50, 2048};
+     avgSortResult mergeResArray     { 50, 2048};
+ 
+     // shorten to four algorithm names
+     const char* names[4] = {
+         "Bubble Sort",
+         "Selection Sort",
+         "Insertion Sort",
+         "Merge Sort"
+     };
+ 
+     // split LL vs Array for easy looping
+     avgSortResult resultsLL[4]    = { bubbleResLL,    selectionResLL,
+                                       insertionResLL, mergeResLL };
+     avgSortResult resultsArr[4]   = { bubbleResArray, selectionResArray,
+                                       insertionResArray, mergeResArray };
+ 
+     // column widths
+     constexpr int COL1 = 15;  // Algorithm
+     constexpr int COL2 =  7;  // each numeric column
+     // total inner width = COL1 + 4 cols of COL2 + 5 separators ('|')
+     int innerW = COL1 + COL2*4 + 5;
+     std::string sep(innerW, '-');
+ 
+     // 1) top border
+     std::cout << sep << "\n";
+ 
+     // 2) centered title
+     std::cout << center("Average of 10 Simulations", innerW) << "\n";
+ 
+     // 3) underline
+     std::cout << sep << "\n";
+ 
+     // 4) two-group header: blank, [ LL ], [ Array ]
+     int grpW = COL2*2 + 1;  // spans two sub-columns plus the inner '|'
+     std::cout 
+         << std::setw(COL1) << "" 
+         << "|" << center("LL",    grpW)
+         << "|" << center("Array", grpW)
+         << "|\n";
+    
+    std::cout << std::setw(COL1);
+ 
+     // 5) sub-headers
+     std::cout
+         << std::setw(COL1) << std::left   << "Algorithm"
+         << "|" << std::setw(COL2) << std::right << "Time"
+         << "|" << std::setw(COL2)              << "Memory"
+         << "|" << std::setw(COL2)              << "Time"
+         << "|" << std::setw(COL2)              << "Memory"
+         << "|\n";
+ 
+     // 6) separator
+     std::cout << sep << "\n";
+ 
+     // 7) data rows
+     for (int i = 0; i < 4; ++i) {
+         std::cout
+             << std::setw(COL1) << std::left   << names[i]
+             << "|" << std::setw(COL2) << std::right << resultsLL[i].avgTime
+             << "|" << std::setw(COL2)              << resultsLL[i].avgMemory
+             << "|" << std::setw(COL2)              << resultsArr[i].avgTime
+             << "|" << std::setw(COL2)              << resultsArr[i].avgMemory
+             << "|\n";
+     }
+ 
+     // 8) bottom border
+     std::cout << sep << "\n";
+}
+
+void Question2()
+{
+    avgSortResult linearResLL    {  30,  512 };
+    avgSortResult linearResArray    {  30,  512 };
+    avgSortResult binaryResLL    {   5,  256 };
+    avgSortResult binaryResArray    {  30,  512 };
+
+    // shorten to four algorithm names
+    const char* names[2] = {
+        "Linear Search",
+        "Binary Search",
+    };
+
+    // split LL vs Array for easy looping
+    avgSortResult resultsLL[2]    = { linearResLL,  binaryResLL};
+    avgSortResult resultsArr[2]   = { linearResArray, binaryResArray };
+
+    // column widths
+    constexpr int COL1 = 15;  // Algorithm
+    constexpr int COL2 =  7;  // each numeric column
+    // total inner width = COL1 + 4 cols of COL2 + 5 separators ('|')
+    int innerW = COL1 + COL2*4 + 5;
+    std::string sep(innerW, '-');
+
+    // 1) top border
+    std::cout << sep << "\n";
+
+    // 2) centered title
+    std::cout << center("Average of 10 Simulations", innerW) << "\n";
+
+    // 3) underline
+    std::cout << sep << "\n";
+
+    // 4) two-group header: blank, [ LL ], [ Array ]
+    int grpW = COL2*2 + 1;  // spans two sub-columns plus the inner '|'
+    std::cout 
+        << std::setw(COL1) << "" 
+        << "|" << center("LL",    grpW)
+        << "|" << center("Array", grpW)
+        << "|\n";
+   
+   std::cout << std::setw(COL1);
+
+    // 5) sub-headers
+    std::cout
+        << std::setw(COL1) << std::left   << "Algorithm"
+        << "|" << std::setw(COL2) << std::right << "Time"
+        << "|" << std::setw(COL2)              << "Memory"
+        << "|" << std::setw(COL2)              << "Time"
+        << "|" << std::setw(COL2)              << "Memory"
+        << "|\n";
+
+    // 6) separator
+    std::cout << sep << "\n";
+
+    // 7) data rows
+    for (int i = 0; i < 2; ++i) {
+        std::cout
+            << std::setw(COL1) << std::left   << names[i]
+            << "|" << std::setw(COL2) << std::right << resultsLL[i].avgTime
+            << "|" << std::setw(COL2)              << resultsLL[i].avgMemory
+            << "|" << std::setw(COL2)              << resultsArr[i].avgTime
+            << "|" << std::setw(COL2)              << resultsArr[i].avgMemory
+            << "|\n";
+    }
+
+    // 8) bottom border
+    std::cout << sep << "\n";
+}
+void Question3()
+{
+   //2 avgResult
+}
+
+void Question_Insert()
+{
+   //8 sort result
+}
+
+void Question_Delete()
+{
+   //8 sort result
+}
 
 #endif
 void menu()
 {
-    int choice;
-    do {
-        // Clear the terminal
-        #ifdef _WIN32
-            system("cls");
-        #else
-            system("clear");
-        #endif
+    while (true) {
+        clearScreen();
 
         cout << "1. Sort Customer by Date\n"
              << "2. Percentage of Electronics that paid using Credit Card\n"
@@ -266,48 +441,58 @@ void menu()
              << "4. Insert new row\n"
              << "5. Delete a row\n"
              << "6. Exit\n"
-             << "Enter your choice: ";
-        cin >> choice;
+             << "Enter your choice (1-6): ";
 
-        if (cin.fail() || choice < 1 || choice > 6) {
-            cin.clear(); // clear the error flag // discard invalid input
-            system("cls");
-            cout << "Invalid choice. Please enter a number between 1 and 6. Press Enter to Continue...\n";
-            cin.get(); // wait for user to press Enter before clearing the screen
-        } else {
-            break; // valid input
+        int choice;
+        // validate numeric input
+        while (!(cin >> choice) || choice < 1 || choice > 6) {
+            cin.clear();
+            clearScreen();
+            cout << "Invalid choice. Please enter a number between 1 and 6.\n"
+                 << "Enter your choice (1-6): ";
         }
-    } while (true);
 
-    // Perform action based on choice
-    if (choice == 1) 
-    {
-        // Call sorting function here
-        cout << "Sorting Customer by Date...\n";
-    }
-    else if (choice == 2) 
-    {
-        // Call percentage calculation function here
-        cout << "Calculating percentage of Electronics that paid using Credit Card...\n";
-    } 
-    else if (choice == 3) 
-    {
-        // Call most frequent word function here
-        cout << "Finding most frequent word in 1 Star Rating...\n";
-    } 
-    else if (choice == 4) 
-    {
-        // Call insert new row function here
-        cout << "Inserting new row...\n";
-    } 
-    else if (choice == 5) 
-    {
-        // Call delete a row function here
-        cout << "Deleting a row...\n";
-    } 
-    else if (choice == 6) 
-    {
-        cout << "Exiting...\n";
-        return;
+        clearScreen();
+        // dispatch
+        switch (choice) {
+            case 1:
+                cout << "Sorting Customer by Date...\n\n";
+                Question1();
+                break;
+            case 2:
+                cout << "Calculating percentage of Electronics that paid using Credit Card...\n\n";
+                Question2();
+                break;
+            case 3:
+                cout << "Finding most frequent word in 1 Star Rating...\n\n";
+                Question3();
+                break;
+            case 4:
+                cout << "Inserting new row...\n\n";
+                // your insertRowFunction();
+                break;
+            case 5:
+                cout << "Deleting a row...\n\n";
+                // your deleteRowFunction();
+                break;
+            case 6:
+                cout << "Exiting...\n";
+                return;
+        }
+
+        // ask if we should loop again
+        char again;
+        do {
+            cout << "\nReturn to menu? (Y/N): ";
+            cin >> again;
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            again = tolower(again);
+        } while (again != 'y' && again != 'n');
+
+        if (again == 'n') {
+            cout << "Goodbye!\n";
+            break;
+        }
+        // else continue; next iteration will clearScreen() and redraw menu
     }
 }
