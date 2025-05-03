@@ -45,8 +45,8 @@ struct SearchResult {
 
 ///////////////////////////////////// SortResult Struct /////////////////////////////////////
 struct SortResult {
-    long long timeMicroseconds;
-    size_t memoryKBUsed = 0;
+    long long timeMicroseconds = 0;
+    long long memoryKBUsed = 0;
 };
 
 ///////////////////////////////////// frequency Struct /////////////////////////////////////
@@ -62,19 +62,23 @@ struct WordFrequency {
 ///////////////////////////////////// avgSortResult Struct /////////////////////////////////////
 struct avgSortResult
 {
-    int avgTime = 0;
-    int avgMemory = 0;
+    long long avgTime = 0;
+    long long avgMemory = 0;
 };
 
-/////////////////////////////CLEAR THE SCREEN ///////////////////////////////////////////////////////////////
-void clearScreen() {
-    #ifdef _WIN32
-        system("cls");
-    #else
-        system("clear");
-    #endif
-}
+///////////////////////////////////// avgSearchResult Struct /////////////////////////////////////
+struct avgSearchResult {
+    long long avgTime = 0;               // time taken
+    long long avgMemory = 0;             // memory used                 
+    int avgResultCount = 0;              // number of row found
+    float percentage = 0.0f;             // percentage    
+};
 
+///////////////////////////////////// Insert & Delete Struct /////////////////////////////////////
+struct InsDelResult {
+    long long time = 0;
+    size_t memory = 0;
+};
 ///////////////////////////////////// Free Array Container Memory /////////////////////////////////////////////
 void freeContainer(dataContainer2D& container) {
     if (container.fields != nullptr) {
@@ -496,3 +500,6 @@ void menu()
         // else continue; next iteration will clearScreen() and redraw menu
     }
 }
+
+
+#endif
