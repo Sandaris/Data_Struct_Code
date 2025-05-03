@@ -1,12 +1,9 @@
-#include <iostream>
-#include <fstream>
-#include <string>
 #include <functional>
 #include <filesystem>
 #include <unordered_map>
-#include "common_function.hpp"
-#include "Array.hpp"
 #include <regex>
+
+#include "common_function.hpp"
 
 namespace fs = std::filesystem;
 using namespace std;
@@ -363,142 +360,85 @@ struct LinkedList
     list.printForward();
 
 */
+////////////////////////////////////////////////////////////// CLONING FUNCTION ////////////////////////////////////////////////////////////
+LinkedList cloneList(const LinkedList& original) {
+    LinkedList copy;
+    copy.x = original.x;
+    copy.y = 0;
 
+    // Step 1: Copy header fields
+    copy.fieldHead = new string[original.x];
+    for (int i = 0; i < original.x; ++i) {
+        copy.fieldHead[i] = original.fieldHead[i];
+    }
+
+    // Step 2: Copy each row (Node)
+    Node* current = original.head;
+    while (current) {
+        Node* newNode = new Node(original.x);
+        for (int i = 0; i < original.x; ++i) {
+            newNode->data[i] = current->data[i];
+        }
+
+        // Link node to new list
+        if (!copy.head) {
+            copy.head = copy.tail = newNode;
+        } else {
+            copy.tail->next = newNode;
+            newNode->prev = copy.tail;
+            copy.tail = newNode;
+        }
+
+        current = current->next;
+        copy.y++;
+    }
+
+    return copy;
+}
 // ——————————————————
-int bubbleSort(LinkedList& list, const string& columnName) 
-{
-    // 1) find the column index
-    int colIndex = -1;
+// LinkedList original;
+// original.loadFromCSV("cleaned_transactions.csv");
+// LinkedList clone = cloneList(original);
+
+///////////////////////////////////////////////////////////// SORT ALGORITHM ////////////////////////////////////////////////////////////
+// ——————————————————
+SortResult bubbleSortLinked(LinkedList& list, const string& columnName) {
+    SortResult result;
+
+    int col = -1;
     for (int i = 0; i < list.x; ++i) {
         if (list.fieldHead[i] == columnName) {
-            colIndex = i;
+            col = i;
             break;
         }
     }
-    if (colIndex < 0) {
-        cerr << "Error: column \"" << columnName << "\" not found.\n";
-        return 1;
-    }
+    if (col < 0) return result;
 
-    // 2) start timer & memory tracking
-    auto t0 = high_resolution_clock::now();
+    Timer timer;
+    timer.begin();
+    size_t memStart = getUsedMemoryKB();
 
-    // 3) bubble‐sort by swapping data pointers
     bool swapped;
     do {
         swapped = false;
         for (Node* cur = list.head; cur && cur->next; cur = cur->next) {
-            if (cur->data[colIndex] > cur->next->data[colIndex]) {
+            if (cur->data[col] > cur->next->data[col]) {
                 swap(cur->data, cur->next->data);
                 swapped = true;
             }
         }
     } while (swapped);
 
-    // 4) Stop timer
-    auto t1 = high_resolution_clock::now();
-    auto ms = duration_cast<milliseconds>(t1 - t0).count();
+    timer.finish();
+    result.timeMicroseconds = timer.getDurationMicroseconds();
+    result.memoryKBUsed = getUsedMemoryKB() - memStart;
 
-    // 5) Report elapsed time
-    cout << "Selection sort on \"" << columnName
-              << "\" took " << ms << " ms\n";
-
-    return static_cast<int>(ms);
+    return result;
 }
 
+SortResult selectionSortLinked(LinkedList& list, const string& columnName) {
+    SortResult result;
 
-
-int mergeSortList(LinkedList& list, const string& columnName) {
-    if (!list.head) return 1; // nothing to sort
-
-    // 1) find the column index
-    int colIndex = -1;
-    for (int i = 0; i < list.x; ++i) {
-        if (list.fieldHead[i] == columnName) {
-            colIndex = i;
-            break;
-        }
-    }
-    if (colIndex < 0) {
-        cerr << "Error: column \"" << columnName << "\" not found.\n";
-        return 1;
-    }
-
-    using NodePtr = Node*;
-
-    // 2) recursive lambdas, capturing colIndex
-    function<NodePtr(NodePtr)> split = [&](NodePtr head) -> NodePtr {
-        NodePtr slow = head, fast = head->next;
-        while (fast && fast->next) {
-            slow = slow->next;
-            fast = fast->next->next;
-        }
-        NodePtr second = slow->next;
-        slow->next = nullptr;
-        if (second) second->prev = nullptr;
-        return second;
-    };
-
-    function<NodePtr(NodePtr,NodePtr)> sortedMerge =
-      [&](NodePtr a, NodePtr b) -> NodePtr
-    {
-        if (!a) return b;
-        if (!b) return a;
-        if (a->data[colIndex] <= b->data[colIndex]) {
-            a->next = sortedMerge(a->next, b);
-            if (a->next) a->next->prev = a;
-            a->prev = nullptr;
-            return a;
-        } else {
-            b->next = sortedMerge(a, b->next);
-            if (b->next) b->next->prev = b;
-            b->prev = nullptr;
-            return b;
-        }
-    };
-
-    function<NodePtr(NodePtr)> mergeSort =
-      [&](NodePtr head) -> NodePtr
-    {
-        if (!head || !head->next) return head;
-        NodePtr second = split(head);
-        head   = mergeSort(head);
-        second = mergeSort(second);
-        return sortedMerge(head, second);
-    };
-
-    // 3) START TIMER
-    auto t0 = high_resolution_clock::now();
-
-    // 4) sort
-    list.head = mergeSort(list.head);
-
-    // 5) STOP TIMER & REPORT
-    // 4) Stop timer
-    auto t1 = high_resolution_clock::now();
-    auto ms = duration_cast<milliseconds>(t1 - t0).count();
-
-    // 6) Report elapsed time
-    cout << "Merge sort on \"" << columnName
-              << "\" took " << ms << " ms\n";
-
-    // 6) repair tail & update row count
-    NodePtr cur = list.head, prev = nullptr;
-    int count = 0;
-    while (cur) {
-        prev = cur;
-        cur  = cur->next;
-        ++count;
-    }
-    list.tail = prev;
-    list.y    = count;
-
-    return static_cast<int>(ms);
-}
-
-int insertionSort(LinkedList& list, const string& columnName) {
-    
-    // 1) Find column index
     int col = -1;
     for (int i = 0; i < list.x; ++i) {
         if (list.fieldHead[i] == columnName) {
@@ -506,200 +446,215 @@ int insertionSort(LinkedList& list, const string& columnName) {
             break;
         }
     }
-    if (col < 0) {
-        cerr << "Error: column \"" << columnName << "\" not found.\n";
-        return 1;
-    }
+    if (col < 0 || !list.head || !list.head->next) return result;
 
-    // nothing to sort if empty or single node
-    if (!list.head || !list.head->next) return 1 ;
+    Timer timer;
+    timer.begin();
+    size_t memStart = getUsedMemoryKB();
 
-    // 2) Start timer
-    auto t0 = high_resolution_clock::now();
-
-    // 3) Perform insertion sort on the doubly-linked list
-    Node* sorted = list.head;
-    Node* curr   = sorted->next;
-    sorted->prev = sorted->next = nullptr;
-
-    while (curr) {
-        Node* next = curr->next;
-        curr->prev = curr->next = nullptr;
-
-        // insert at front?
-        if (curr->data[col] < sorted->data[col]) {
-            curr->next   = sorted;
-            sorted->prev = curr;
-            sorted       = curr;
-        } else {
-            // locate insertion point
-            Node* p = sorted;
-            while (p->next && p->next->data[col] <= curr->data[col]) {
-                p = p->next;
-            }
-            // insert after p
-            curr->next        = p->next;
-            if (p->next) p->next->prev = curr;
-            p->next           = curr;
-            curr->prev        = p;
-        }
-
-        curr = next;
-    }
-
-    // 4) Stop timer
-    auto t1 = high_resolution_clock::now();
-    auto ms = duration_cast<milliseconds>(t1 - t0).count();
-
-    // 5) Update list head & tail
-    list.head = sorted;
-    list.tail = sorted;
-    while (list.tail->next) {
-        list.tail = list.tail->next;
-    }
-
-    // 6) Report elapsed time
-    cout << "Insertion sort on \"" << columnName
-              << "\" took " << ms << " ms\n";
-
-    return static_cast<int>(ms);
-}
-
-int selectionSort(LinkedList& list, const string& columnName) 
-{
-    // 1) Find column index
-    int col = -1;
-    for (int i = 0; i < list.x; ++i) {
-        if (list.fieldHead[i] == columnName) {
-            col = i;
-            break;
-        }
-    }
-    if (col < 0) {
-        cerr << "Error: column \"" << columnName << "\" not found.\n";
-        return 1;
-    }
-
-    // nothing to do on empty or single‐node list
-    if (!list.head || !list.head->next) return 1;
-
-    // 2) Start timer
-    auto t0 = high_resolution_clock::now();
-
-    // 3) Selection‐sort by swapping each node's data pointer
     for (Node* i = list.head; i; i = i->next) {
-        // find min in [i … end)
         Node* minNode = i;
         for (Node* j = i->next; j; j = j->next) {
             if (j->data[col] < minNode->data[col]) {
                 minNode = j;
             }
         }
-        // swap row‐buffers if needed
         if (minNode != i) {
             swap(i->data, minNode->data);
         }
     }
 
-    // 4) Stop timer
-    auto t1 = high_resolution_clock::now();
-    auto ms = duration_cast<milliseconds>(t1 - t0).count();
+    timer.finish();
+    result.timeMicroseconds = timer.getDurationMicroseconds();
+    result.memoryKBUsed = getUsedMemoryKB() - memStart;
 
-    // 5) Report elapsed time
-    cout << "Selection sort on \"" << columnName
-              << "\" took " << ms << " ms\n";
-
-    return static_cast<int>(ms);
+    return result;
 }
 
-int linearSearch1Field(const LinkedList& list, const string& columnName, const string& searchValue) 
-{
+SortResult insertionSortLinked(LinkedList& list, const string& columnName) {
+    SortResult result;
 
-    auto start = high_resolution_clock::now();
-
-    int columnIndex = -1;
-
-    // Find the index of the column
+    int col = -1;
     for (int i = 0; i < list.x; ++i) {
         if (list.fieldHead[i] == columnName) {
-            columnIndex = i;
+            col = i;
             break;
         }
     }
+    if (col < 0 || !list.head || !list.head->next) return result;
 
-    if (columnIndex == -1) {
-        cerr << "Error: Column '" << columnName << "' not found.\n";
-        return 1;
-    }
+    Timer timer;
+    timer.begin();
+    size_t memStart = getUsedMemoryKB();
 
-    cout << "Results for " << columnName << " = " << searchValue << ":\n";
-    cout << string(50, '-') << "\n";
+    Node* sorted = list.head;
+    Node* curr = sorted->next;
+    sorted->prev = sorted->next = nullptr;
 
-    int matchCount = 0;
-    for (Node* cur = list.head; cur; cur = cur->next) {
-        if (cur->data[columnIndex] == searchValue) {
-            for (int i = 0; i < list.x; ++i) {
-                cout << cur->data[i] << (i + 1 < list.x ? " | " : "\n");
+    while (curr) {
+        Node* next = curr->next;
+        curr->prev = curr->next = nullptr;
+
+        if (curr->data[col] < sorted->data[col]) {
+            curr->next = sorted;
+            sorted->prev = curr;
+            sorted = curr;
+        } else {
+            Node* p = sorted;
+            while (p->next && p->next->data[col] <= curr->data[col]) {
+                p = p->next;
             }
-            ++matchCount;
+            curr->next = p->next;
+            if (p->next) p->next->prev = curr;
+            p->next = curr;
+            curr->prev = p;
         }
+
+        curr = next;
     }
 
-    if (matchCount == 0) {
-        cout << "No matching results found.\n";
+    list.head = sorted;
+    list.tail = sorted;
+    while (list.tail->next) {
+        list.tail = list.tail->next;
     }
 
-    auto end = high_resolution_clock::now();
-    auto duration = duration_cast<milliseconds>(end - start).count();
-    cout << "\nTime taken for linear search: " << duration << " ms\n";
+    timer.finish();
+    result.timeMicroseconds = timer.getDurationMicroseconds();
+    result.memoryKBUsed = getUsedMemoryKB() - memStart;
 
-    return static_cast<int>(duration);
+    return result;
 }
 
+SortResult mergeSortLinked(LinkedList& list, const string& columnName) {
+    SortResult result;
 
-void linearSearchByTwoColumns(const LinkedList& list,
-                               const string& columnName1, const string& value1,
-                               const string& columnName2, const string& value2) 
-{
-    auto start = high_resolution_clock::now();
-
-    int col1Index = -1;
-    int col2Index = -1;
-
-    // Find index of both columns
+    int col = -1;
     for (int i = 0; i < list.x; ++i) {
-        if (list.fieldHead[i] == columnName1) col1Index = i;
-        if (list.fieldHead[i] == columnName2) col2Index = i;
+        if (list.fieldHead[i] == columnName) {
+            col = i;
+            break;
+        }
+    }
+    if (col < 0 || !list.head) return result;
+
+    Timer timer;
+    timer.begin();
+    size_t memStart = getUsedMemoryKB();
+
+    auto split = [](Node* head) -> Node* {
+        Node* slow = head, *fast = head->next;
+        while (fast && fast->next) {
+            slow = slow->next;
+            fast = fast->next->next;
+        }
+        Node* second = slow->next;
+        slow->next = nullptr;
+        if (second) second->prev = nullptr;
+        return second;
+    };
+
+    function<Node*(Node*, Node*)> sortedMerge = [&](Node* a, Node* b) -> Node* {
+        if (!a) return b;
+        if (!b) return a;
+        if (a->data[col] <= b->data[col]) {
+            a->next = sortedMerge(a->next, b);
+            if (a->next) a->next->prev = a;
+            return a;
+        } else {
+            b->next = sortedMerge(a, b->next);
+            if (b->next) b->next->prev = b;
+            return b;
+        }
+    };
+
+    function<Node*(Node*)> mergeSort = [&](Node* head) -> Node* {
+        if (!head || !head->next) return head;
+        Node* second = split(head);
+        head = mergeSort(head);
+        second = mergeSort(second);
+        return sortedMerge(head, second);
+    };
+
+    list.head = mergeSort(list.head);
+
+    Node* cur = list.head;
+    Node* prev = nullptr;
+    int count = 0;
+    while (cur) {
+        prev = cur;
+        cur = cur->next;
+        count++;
+    }
+    list.tail = prev;
+    list.y = count;
+
+    timer.finish();
+    result.timeMicroseconds = timer.getDurationMicroseconds();
+    result.memoryKBUsed = getUsedMemoryKB() - memStart;
+
+    return result;
+}
+
+//////////////////////////////////////////////////////////////////////// SEARCH ALGORITHM ////////////////////////////////////////////////////////////////////////
+
+LinkedList LL_linearSearch(
+    const LinkedList& input,
+    const string& columnName,
+    const string& searchValue,
+    SearchResult& meta
+) {
+    auto start = chrono::high_resolution_clock::now();
+    meta.memoryUsed = 0;
+    size_t memStart = getUsedMemoryKB();
+
+    LinkedList result;
+    result.x = input.x;
+    result.y = 0;
+
+    // Copy field headers
+    result.fieldHead = new string[result.x];
+    for (int i = 0; i < result.x; ++i)
+        result.fieldHead[i] = input.fieldHead[i];
+
+    // Find the column index
+    int col = -1;
+    for (int i = 0; i < input.x; ++i) {
+        if (input.fieldHead[i] == columnName) {
+            col = i;
+            break;
+        }
+    }
+    if (col < 0) {
+        meta.resultCount = 0;
+        meta.timeMicroseconds = 0;
+        return result;
     }
 
-    if (col1Index == -1 || col2Index == -1) {
-        cerr << "Error: One or both column names not found.\n";
-        return;
-    }
+    // Search and copy matching nodes
+    for (Node* cur = input.head; cur; cur = cur->next) {
+        if (cur->data[col] == searchValue) {
+            Node* newNode = new Node(result.x);
+            for (int j = 0; j < result.x; ++j)
+                newNode->data[j] = cur->data[j];
 
-    cout << "Results for (" << columnName1 << " = " << value1
-         << ") AND (" << columnName2 << " = " << value2 << "):\n";
-    cout << string(50, '-') << "\n";
-
-    int matchCount = 0;
-    for (Node* cur = list.head; cur; cur = cur->next) {
-        if (cur->data[col1Index] == value1 && cur->data[col2Index] == value2) {
-            for (int i = 0; i < list.x; ++i) {
-                cout << cur->data[i] << (i + 1 < list.x ? " | " : "\n");
+            if (!result.head) {
+                result.head = result.tail = newNode;
+            } else {
+                result.tail->next = newNode;
+                newNode->prev = result.tail;
+                result.tail = newNode;
             }
-            ++matchCount;
+            result.y++;
+            meta.resultCount++;
         }
     }
 
-    if (matchCount == 0) {
-        cout << "No matching results found.\n";
-    }
-
-    auto end = high_resolution_clock::now();
-    auto duration = duration_cast<microseconds>(end - start).count();
-    cout << "\nTime taken for linear search: " << duration << " microseconds\n";
+    auto end = chrono::high_resolution_clock::now();
+    meta.timeMicroseconds = chrono::duration_cast<chrono::microseconds>(end - start).count();
+    meta.memoryUsed = getUsedMemoryKB() - memStart;
+    return result;
 }
-
 
 
 /*you will need to sort it first before u do the search
@@ -713,44 +668,56 @@ void linearSearchByTwoColumns(const LinkedList& list,
     - then call the binary search function in this way:
         binarySearch(list, "Product ID", "PROD956");
 */
-int binarySearch(LinkedList& list,
-                         const string& columnName,
-                         const string& key)
-{
-    // 1) find column index
-    int idx = -1;
-    for (int i = 0; i < list.x; ++i) {
-        if (list.fieldHead[i] == columnName) {
-            idx = i;
+LinkedList LL_binarySearch(
+    const LinkedList& input,
+    const string& columnName,
+    const string& searchValue,
+    SearchResult& meta
+) {
+    auto start = chrono::high_resolution_clock::now();
+    meta.memoryUsed = 0;
+    size_t memStart = getUsedMemoryKB();
+
+    LinkedList result;
+    result.x = input.x;
+    result.y = 0;
+
+    // Copy headers
+    result.fieldHead = new string[result.x];
+    for (int i = 0; i < result.x; ++i)
+        result.fieldHead[i] = input.fieldHead[i];
+
+    // Get column index
+    int col = -1;
+    for (int i = 0; i < input.x; ++i) {
+        if (input.fieldHead[i] == columnName) {
+            col = i;
             break;
         }
     }
-    if (idx < 0) {
-        cerr << "Error: Column \"" << columnName << "\" not found.\n";
-        return -1;
+    if (col < 0) {
+        meta.resultCount = 0;
+        meta.timeMicroseconds = 0;
+        return result;
     }
 
-    auto t0 = chrono::high_resolution_clock::now();
-
-    // 2) helper to find middle between start..end (inclusive)
-    auto getMiddle = [&](Node* start, Node* end) {
-        Node* slow = start;
-        Node* fast = start;
-        while (fast != end && fast->next != end) {
+    // Middle node logic
+    auto getMiddle = [&](Node* low, Node* high) {
+        Node* slow = low;
+        Node* fast = low;
+        while (fast != high && fast->next != high) {
             fast = fast->next->next;
             slow = slow->next;
         }
         return slow;
     };
 
-    // 3) binary-search for any one match
-    Node* low   = list.head;
-    Node* high  = list.tail;
+    Node* low = input.head;
+    Node* high = input.tail;
     Node* found = nullptr;
 
-
     while (low && high) {
-        // ensure low ≤ high by walking from low to high
+        // Ensure low ≤ high by checking reachability
         bool valid = false;
         for (Node* p = low; p; p = p->next) {
             if (p == high) { valid = true; break; }
@@ -758,154 +725,135 @@ int binarySearch(LinkedList& list,
         if (!valid) break;
 
         Node* mid = getMiddle(low, high);
-        if (mid->data[idx] == key) {
+        if (!mid) break;
+
+        if (mid->data[col] == searchValue) {
             found = mid;
             break;
-        }
-        else if (mid->data[idx] < key) {
+        } else if (mid->data[col] < searchValue) {
             low = mid->next;
-        }
-        else {
+        } else {
             high = mid->prev;
         }
     }
 
+    // Copy all matching nodes
+    if (found) {
+        Node* start = found;
+        while (start->prev && start->prev->data[col] == searchValue)
+            start = start->prev;
 
-    // 5) Print results
-    if (!found) {
-        cout << "No results for " << columnName
-                  << " = " << key << "\n";
-        return 1;
-    }
+        for (Node* p = start; p && p->data[col] == searchValue; p = p->next) {
+            Node* newNode = new Node(result.x);
+            for (int j = 0; j < result.x; ++j)
+                newNode->data[j] = p->data[j];
 
-    // Walk back to first matching node
-    Node* first = found;
-    while (first->prev && first->prev->data[idx] == key) {
-        first = first->prev;
-    }
-
-    // Print header once
-    cout << "Results for " << columnName
-              << " = " << key << ":\n";
-    cout << string(50, '-') << "\n";
-
-    // Walk forward and print all matches
-    for (Node* p = first; p && p->data[idx] == key; p = p->next) {
-        for (int c = 0; c < list.x; ++c) {
-            cout << p->data[c]
-                      << (c + 1 < list.x ? " | " : "\n");
+            if (!result.head) {
+                result.head = result.tail = newNode;
+            } else {
+                result.tail->next = newNode;
+                newNode->prev = result.tail;
+                result.tail = newNode;
+            }
+            result.y++;
+            meta.resultCount++;
         }
     }
 
-    // 4) Stop timer
-    auto t1 = chrono::high_resolution_clock::now();
-    int ms = static_cast<int>(
-        chrono::duration_cast<chrono::milliseconds>(t1 - t0)
-        .count());
-
-    cout << "Binary search on \"" << columnName
-              << "\" took " << ms << " ms\n";
-
-    return static_cast<int>(ms);
-}
-
-static char* make_cstr(const string& s) {
-    char* buf = new char[s.size()+1];
-    memcpy(buf, s.c_str(), s.size()+1);
-    return buf;
+    auto end = chrono::high_resolution_clock::now();
+    meta.timeMicroseconds = chrono::duration_cast<chrono::microseconds>(end - start).count();
+    meta.memoryUsed = getUsedMemoryKB() - memStart;
+    return result;
 }
 
 
 /*
-    call in this way:
-
-    - first load the data into the linked list:
-        LinkedList list;
-        if (!list.loadFromCSV("cleaned_transactions.csv")) {
-            return 1;
-        }
-    - Filter the data by rating:
-        LinkedList oneStar = list.linearSearch1Field("Rating","1");
-
-    - call the function to get the top N frequent words:    
-        dataContainer2D dc = getTopFrequentWordsDC(list, "Product ID", 10);
-
-    - print to verify:
-        printDataContainer(dc);
-
+   SearchResult linearMeta;
+LinkedList filteredLinear = LL_linearSearch(list, "Product ID", "PROD1234", linearMeta);
+std::cout << "Linear search took " << linearMeta.timeMicroseconds << " µs and found "
+          << linearMeta.resultCount << " rows.\n";
 */
-dataContainer2D getTopFrequentWordsDC(const LinkedList& list,
-                                      const string& columnName,
-                                      int topN = 10)
-{
-    dataContainer2D dc;
-    // 1) find column index
-    int col = -1;
-    for (int i = 0; i < list.x; ++i) {
-        if (list.fieldHead[i] == columnName) {
-            col = i; break;
-        }
-    }
-    if (col < 0) {
-        dc.error = 1;
-        return dc;
-    }
+WordFrequency countTopWordsFromLinkedList(const LinkedList& list,
+    const string& columnName,
+    int topN = 10) {
+WordFrequency wf;
+wf.size = 0;
+wf.capacity = topN;
+wf.words = new char*[topN];
+wf.counts = new int[topN];
 
-    // 2) count frequencies
-    unordered_map<string,int> freq;
-    for (Node* cur = list.head; cur; cur = cur->next) {
-        const string &s = cur->data[col];
-        string token;
-        for (unsigned char c : s) {
-            if (c >= 'A' && c <= 'Z')           token.push_back(c - 'A' + 'a');
-            else if ((c >= 'a' && c <= 'z') ||
-                     (c >= '0' && c <= '9'))   token.push_back(c);
-            else {
-                if (!token.empty()) {
-                    ++freq[token];
-                    token.clear();
-                }
-            }
-        }
-        if (!token.empty()) {
-            ++freq[token];
-        }
-    }
-
-    // 3) pick topN via repeated max-scan
-    struct Pair { string w; int c; };
-    Pair picks[100];            // assume topN <= 100
-    int actual = 0;
-    for (; actual < topN; ++actual) {
-        string best; int bestC = 0;
-        for (auto &kv : freq) {
-            if (kv.second > bestC) {
-                bestC = kv.second;
-                best  = kv.first;
-            }
-        }
-        if (bestC == 0) break;
-        picks[actual] = {best, bestC};
-        freq[best]    = -1;
-    }
-
-    // 4) allocate dataContainer2D
-    dc.x = 2;
-    dc.y = actual;
-    // fields
-    dc.fields = new char*[2];
-    dc.fields[0] = make_cstr("Word");
-    dc.fields[1] = make_cstr("Frequency");
-    // data
-    dc.data = new char**[dc.y];
-    for (int i = 0; i < dc.y; ++i) {
-        dc.data[i] = new char*[2];
-        dc.data[i][0] = make_cstr(picks[i].w);
-        dc.data[i][1] = make_cstr(to_string(picks[i].c));
-    }
-
-    return dc;
+for (int i = 0; i < topN; ++i) {
+wf.words[i] = nullptr;
+wf.counts[i] = 0;
 }
+
+size_t memStart = getUsedMemoryKB() * 1024;
+auto start = chrono::high_resolution_clock::now();
+
+// Step 1: Find column index
+int col = -1;
+for (int i = 0; i < list.x; ++i) {
+if (list.fieldHead[i] == columnName) {
+col = i;
+break;
+}
+}
+if (col < 0) {
+wf.timeMicroseconds = 0;
+wf.memoryUsed = 0;
+return wf;
+}
+
+// Step 2: Count word frequencies
+unordered_map<string, int> freq;
+for (Node* cur = list.head; cur; cur = cur->next) {
+const string& s = cur->data[col];
+string token;
+for (unsigned char c : s) {
+if (isalnum(c)) token += tolower(c);
+else if (!token.empty()) {
+++freq[token];
+token.clear();
+}
+}
+if (!token.empty()) ++freq[token];
+}
+
+// Step 3: Pick top N using repeated max scan
+struct Pair { string w; int c; };
+vector<Pair> picks;
+picks.reserve(topN);
+
+for (int count = 0; count < topN; ++count) {
+string best;
+int bestC = 0;
+for (auto& kv : freq) {
+if (kv.second > bestC) {
+best = kv.first;
+bestC = kv.second;
+}
+}
+if (bestC == 0) break;
+picks.push_back({best, bestC});
+freq[best] = -1;
+}
+
+// Step 4: Copy into WordFrequency container
+wf.size = picks.size();
+for (int i = 0; i < wf.size; ++i) {
+wf.words[i] = strdup(picks[i].w.c_str());
+wf.counts[i] = picks[i].c;
+}
+
+auto end = chrono::high_resolution_clock::now();
+size_t memEnd = getUsedMemoryKB() * 1024;
+
+wf.timeMicroseconds = chrono::duration_cast<chrono::microseconds>(end - start).count();
+wf.memoryUsed = memEnd - memStart;
+
+return wf;
+}
+
 
 
 void printDataContainer(dataContainer2D& dc) 
