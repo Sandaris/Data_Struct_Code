@@ -179,54 +179,6 @@ struct LinkedList
         }
     }
 
-    SearchResult deleteRows(const string& columnName,
-                   const string& value)
-    {
-
-        SearchResult meta;
-
-        Timer timer;
-        timer.begin();
-        
-        meta.memoryUsed = 0;
-        size_t memStart = getUsedMemoryKB();
-
-        // find the index of the column
-        int colIdx = -1;
-        for (int i = 0; i < x; ++i) {
-            if (fieldHead[i] == columnName) {
-                colIdx = i;
-                break;
-            }
-        }
-        if (colIdx < 0) {
-            cerr << "Error: column '" << columnName << "' not found\n";
-            return 0;
-        }
-
-        // now delete matching nodes
-        Node* cur = head;
-        while (cur) {
-            Node* nxt = cur->next;
-            if (cur->data[colIdx] == value) {
-                if (cur->prev) cur->prev->next = cur->next;
-                else           head = cur->next;
-
-                if (cur->next) cur->next->prev = cur->prev;
-                else           tail = cur->prev;
-
-                delete cur;
-                --y;
-            }
-            cur = nxt;
-        }
-
-        timer.finish();
-        meta.timeMicroseconds = timer.getDurationMicroseconds();
-        meta.memoryUsed = getUsedMemoryKB() - memStart;
-
-        return meta;
-    }
 
     /*
     call in this way:
@@ -284,92 +236,102 @@ struct LinkedList
         // 4) (optional) measure and print elapsed time
         auto end      = high_resolution_clock::now();
         auto duration = duration_cast<microseconds>(end - start).count();
-        printf("\nSearched \"%s = %s\" in %lld microseconds; found %d rows.\n",
-               columnName.c_str(), searchValue.c_str(), duration, result.y);
 
         return result;  
     }
 
-    SearchResult insertNewRowFromInput() {
-
-        SearchResult meta;
-
-        Timer timer;
-        timer.begin();
-        
-        meta.memoryUsed = 0;
-        size_t memStart = getUsedMemoryKB();
-
-        if (!fieldHead || x == 0) {
-            cout << "Error: Header fields are not initialized.\n";
-            return 0;
-        }
-    
-        Node* newNode = new Node(x);
-        cout << "Enter data for the new row:\n";
-    
-        for (int i = 0; i < x; ++i) {
-            string value;
-            string field = fieldHead[i];
-    
-            while (true) {
-                cout << field << ": ";
-                getline(cin, value);
-    
-                bool valid = true;
-    
-                // Validation rules based on field name
-                if (field == "Date") {
-                    regex date_regex(R"(^\d{2}/\d{2}/\d{4}$)");
-                    valid = regex_match(value, date_regex);
-                    if (!valid) cout << "Format must be dd/mm/yyyy.\n";
-                }
-                else if (field == "Customer ID") {
-                    regex id_regex(R"(^CUST\d{4}$)");
-                    valid = regex_match(value, id_regex);
-                    if (!valid) cout << "Format must be CUSTXXXX.\n";
-                }
-                else if (field == "Product ID") {
-                    regex prod_regex(R"(^PROD\d{3}$)");
-                    valid = regex_match(value, prod_regex);
-                    if (!valid) cout << "Format must be PRODXXX.\n";
-                }
-                else if (field == "Price") {
-                    regex price_regex(R"(^\d+(\.\d{1,2})?$)");
-                    valid = regex_match(value, price_regex);
-                    if (!valid) cout << "Price must be a number with max 2 decimal places.\n";
-                }
-                else if (field == "Rating") {
-                    regex rating_regex(R"(^[1-5]$)");
-                    valid = regex_match(value, rating_regex);
-                    if (!valid) cout << "Rating must be an integer from 1 to 5.\n";
-                }
-    
-                if (valid) break;
-            }
-    
-            newNode->data[i] = value;
-        }
-    
-        // Append node to the list
-        if (!head) {
-            head = tail = newNode;
-        } else {
-            tail->next = newNode;
-            newNode->prev = tail;
-            tail = newNode;
-        }
-    
-        y++; // increment row count
-        cout << "New row successfully added. Total rows: " << y << "\n";
-        timer.finish();
-        meta.timeMicroseconds = timer.getDurationMicroseconds();
-        meta.memoryKBUsed = getUsedMemoryKB() - memStart;
-
-        return meta;
-    }
 };
 
+LinkedList insertNewRowLinkedList(LinkedList list, const char* newValues[], int recordLen, InsDelResult& result) {
+    result.memory = 0;
+    result.time = 0;
+
+    Timer timer;
+    timer.begin();
+    size_t memStart = getUsedMemoryKB();
+
+    // Validate column count
+    if (recordLen != list.x || list.fieldHead == nullptr || list.x == 0) {
+        cerr << "Error: Field count mismatch or header not initialized.\n";
+        return list;
+    }
+
+    // Create new node and assign values
+    Node* newNode = new Node(list.x);
+    for (int i = 0; i < list.x; ++i) {
+        newNode->data[i] = string(newValues[i]);
+    }
+
+    // Append node to the list
+    if (!list.head) {
+        list.head = list.tail = newNode;
+    } else {
+        list.tail->next = newNode;
+        newNode->prev = list.tail;
+        list.tail = newNode;
+    }
+
+    list.y++;  // Increase row count
+
+    result.memory = getUsedMemoryKB() - memStart;
+    timer.finish();
+    result.time = timer.getDurationMicroseconds();
+
+    return list;
+}
+
+
+LinkedList deleteRows(LinkedList list, const string& columnName, const string& value, InsDelResult& result) {
+    result.memory = 0;
+    result.time = 0;
+
+    Timer timer;
+    timer.begin();
+    size_t memStart = getUsedMemoryKB();
+
+    // Find the index of the column
+    int colIdx = -1;
+    for (int i = 0; i < list.x; ++i) {
+        if (list.fieldHead[i] == columnName) {
+            colIdx = i;
+            break;
+        }
+    }
+    if (colIdx < 0) {
+        cerr << "Error: column '" << columnName << "' not found\n";
+        return list;
+    }
+
+    // Delete all matching nodes
+    Node* cur = list.head;
+    while (cur) {
+        Node* nxt = cur->next;
+        if (cur->data[colIdx] == value) {
+            // If current node matches, delete it
+            if (cur->prev) {
+                cur->prev->next = cur->next;
+            } else {
+                list.head = cur->next;  // If first node, update head
+            }
+
+            if (cur->next) {
+                cur->next->prev = cur->prev;
+            } else {
+                list.tail = cur->prev;  // If last node, update tail
+            }
+
+            delete cur;  // Free memory
+            --list.y;  // Decrease row count
+        }
+        cur = nxt;  // Move to the next node
+    }
+
+    result.memory = getUsedMemoryKB() - memStart;
+    timer.finish();
+    result.time = timer.getDurationMicroseconds();
+
+    return list;
+}
 // ——————————————————
 // Bubble‐sort as a free function
 /* 

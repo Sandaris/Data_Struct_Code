@@ -532,56 +532,15 @@ WordFrequency getWordFrequencyArray(const dataContainer2D& container, int fieldI
 // cout << "Estimated memory: " << wf.manualEstimatedBytes << " bytes\n";
 
 ///////////////////////////////////// Insert function /////////////////////////////////////
-void insertRow(dataContainer2D& container, char** newRow) {
-    if (!newRow) return;
 
-    // Allocate new data array with +1 row
-    char*** newData = new char**[container.y + 1];
+dataContainer2D writeNewLines(dataContainer2D dc, const char* newValues[], int recordLen, InsDelResult& result) {
 
-    // Copy old data
-    for (int i = 0; i < container.y; ++i) {
-        newData[i] = container.data[i];
-    }
+    result.memory = 0;
+    result.time = 0;
 
-    // Assign the new row
-    newData[container.y] = new char*[container.x];
-    for (int j = 0; j < container.x; ++j) {
-        newData[container.y][j] = strdup(newRow[j]); // deep copy
-    }
+    Timer timer; timer.begin();
+    size_t memStart = getUsedMemoryKB();
 
-    // Clean up old data pointer (not individual rows)
-    delete[] container.data;
-
-    // Update container
-    container.data = newData;
-    container.y++;
-}
-
-///////////////////////////////////// Delete function /////////////////////////////////////
-bool deleteRowByValue(dataContainer2D& container, int fieldIndex, const char* value) {
-    if (fieldIndex < 0 || fieldIndex >= container.x) return false;
-
-    for (int i = 0; i < container.y; ++i) {
-        if (strcmp(container.data[i][fieldIndex], value) == 0) {
-            // Free memory for the row
-            for (int j = 0; j < container.x; ++j) {
-                free(container.data[i][j]);
-            }
-            delete[] container.data[i];
-
-            // Shift remaining rows up
-            for (int k = i + 1; k < container.y; ++k) {
-                container.data[k - 1] = container.data[k];
-            }
-
-            container.y--;
-            return true; // only delete first match
-        }
-    }
-    return false; // not found
-}
-
-dataContainer2D writeNewLines(dataContainer2D dc, const char* newValues[], int recordLen) {
     // 1) Validation: must match number of columns
     if (recordLen != dc.x) {
         std::cerr << "Error: expected " << dc.x
@@ -612,10 +571,17 @@ dataContainer2D writeNewLines(dataContainer2D dc, const char* newValues[], int r
     // 6) Update container and return
     dc.data = newData;
     dc.y  += 1;
+
+    result.memory = getUsedMemoryKB() - memStart;
+    timer.finish();
+    result.time = timer.getDurationMicroseconds();
+
     return dc;
 }
 
+///////////////////////////////////// Delete function /////////////////////////////////////
 dataContainer2D deleteRecord(dataContainer2D dc, const char* columnName, const char* key) {
+
     // 1) find column index
     int colIdx = -1;
     for (int j = 0; j < dc.x; ++j) {
@@ -661,10 +627,18 @@ dataContainer2D deleteRecord(dataContainer2D dc, const char* columnName, const c
     delete[] dc.data;
     dc.data = newData;
     dc.y  -= 1;
+
     return dc;
 }
 
-dataContainer2D deleteAllRecords(dataContainer2D dc, const char* columnName, const char* key) {
+dataContainer2D deleteAllRecords(dataContainer2D dc, const char* columnName, const char* key, InsDelResult& result) {
+
+    result.memory = 0;
+    result.time = 0;
+
+    Timer timer; timer.begin();
+    size_t memStart = getUsedMemoryKB();
+
     // 1) find column index
     int colIdx = -1;
     for (int j = 0; j < dc.x; ++j) {
@@ -714,5 +688,10 @@ dataContainer2D deleteAllRecords(dataContainer2D dc, const char* columnName, con
     delete[] dc.data;
     dc.data = newData;
     dc.y    = newY;
+
+    result.memory = getUsedMemoryKB() - memStart;
+    timer.finish();
+    result.time = timer.getDurationMicroseconds();
+    
     return dc;
 }
