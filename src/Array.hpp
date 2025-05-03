@@ -142,81 +142,83 @@ dataContainer2D getData(const std::string& filename) {
     SortResult result;
     result.memoryKBUsed = 0;
 
-    size_t memStart = getUsedMemoryKB();
+    size_t memStart = getUsedMemoryBytes();
     Timer timer; timer.begin();
 
     bool isDate = isDateFormat(container.data[0][fieldIndex]);
 
     for (int i = 0; i < container.y - 1; ++i) {
+        bool swapped = false;
         for (int j = 0; j < container.y - i - 1; ++j) {
+            char** a = container.data[j];
+            char** b = container.data[j + 1];
             bool shouldSwap = false;
 
             if (isDate) {
-                int d1 = parseDate(container.data[j][fieldIndex]);
-                int d2 = parseDate(container.data[j + 1][fieldIndex]);
+                int d1 = parseDate(a[fieldIndex]);
+                int d2 = parseDate(b[fieldIndex]);
                 shouldSwap = (ascending && d1 > d2) || (!ascending && d1 < d2);
             } else {
-                int cmp = strcmp(container.data[j][fieldIndex], container.data[j + 1][fieldIndex]);
+                int cmp = strcmp(a[fieldIndex], b[fieldIndex]);
                 shouldSwap = (ascending && cmp > 0) || (!ascending && cmp < 0);
             }
 
             if (shouldSwap) {
                 std::swap(container.data[j], container.data[j + 1]);
+                swapped = true;
             }
         }
+        if (!swapped) break; // Early exit if sorted
     }
 
     timer.finish();
     result.timeMicroseconds = timer.getDurationMicroseconds();
-    result.memoryKBUsed = getUsedMemoryKB() - memStart;
+    result.memoryKBUsed = getUsedMemoryBytes() - memStart;
     return result;
 }
-
   // Selection Algorithm
   SortResult selectionSortArray(dataContainer2D& container, int fieldIndex, bool ascending) {
     SortResult result;
     result.memoryKBUsed = 0;
 
-    size_t memStart = getUsedMemoryKB();
+    size_t memStart = getUsedMemoryBytes();
     Timer timer; timer.begin();
 
     bool isDate = isDateFormat(container.data[0][fieldIndex]);
 
     for (int i = 0; i < container.y - 1; ++i) {
-        int minIdx = i;
+        int selectedIdx = i;
         for (int j = i + 1; j < container.y; ++j) {
             bool shouldSelect = false;
+            char** current = container.data[j];
+            char** selected = container.data[selectedIdx];
 
             if (isDate) {
-                int d1 = parseDate(container.data[j][fieldIndex]);
-                int d2 = parseDate(container.data[minIdx][fieldIndex]);
+                int d1 = parseDate(current[fieldIndex]);
+                int d2 = parseDate(selected[fieldIndex]);
                 shouldSelect = (ascending && d1 < d2) || (!ascending && d1 > d2);
             } else {
-                int cmp = strcmp(container.data[j][fieldIndex], container.data[minIdx][fieldIndex]);
+                int cmp = strcmp(current[fieldIndex], selected[fieldIndex]);
                 shouldSelect = (ascending && cmp < 0) || (!ascending && cmp > 0);
             }
 
-            if (shouldSelect) {
-                minIdx = j;
-            }
+            if (shouldSelect) selectedIdx = j;
         }
 
-        if (minIdx != i) {
-            std::swap(container.data[i], container.data[minIdx]);
-        }
+        if (selectedIdx != i) std::swap(container.data[i], container.data[selectedIdx]);
     }
 
     timer.finish();
     result.timeMicroseconds = timer.getDurationMicroseconds();
-    result.memoryKBUsed = getUsedMemoryKB() - memStart;
+    result.memoryKBUsed = getUsedMemoryBytes() - memStart;
     return result;
 }
- // Insertion Algorithm
- SortResult insertionSortArray(dataContainer2D& container, int fieldIndex, bool ascending) {
+// Insertion Algorithm
+SortResult insertionSortArray(dataContainer2D& container, int fieldIndex, bool ascending) {
     SortResult result;
     result.memoryKBUsed = 0;
 
-    size_t memStart = getUsedMemoryKB();
+    size_t memStart = getUsedMemoryBytes();
     Timer timer; timer.begin();
 
     bool isDate = isDateFormat(container.data[0][fieldIndex]);
@@ -227,85 +229,79 @@ dataContainer2D getData(const std::string& filename) {
 
         while (j >= 0) {
             bool move = false;
+            char** current = container.data[j];
 
             if (isDate) {
-                int d1 = parseDate(container.data[j][fieldIndex]);
+                int d1 = parseDate(current[fieldIndex]);
                 int d2 = parseDate(key[fieldIndex]);
                 move = (ascending && d1 > d2) || (!ascending && d1 < d2);
             } else {
-                int cmp = strcmp(container.data[j][fieldIndex], key[fieldIndex]);
+                int cmp = strcmp(current[fieldIndex], key[fieldIndex]);
                 move = (ascending && cmp > 0) || (!ascending && cmp < 0);
             }
 
-            if (move) {
-                container.data[j + 1] = container.data[j];
-                --j;
-            } else {
-                break;
-            }
+            if (!move) break;
+
+            container.data[j + 1] = container.data[j];
+            --j;
         }
+
         container.data[j + 1] = key;
     }
 
     timer.finish();
     result.timeMicroseconds = timer.getDurationMicroseconds();
-    result.memoryKBUsed = getUsedMemoryKB() - memStart;
+    result.memoryKBUsed = getUsedMemoryBytes() - memStart;
     return result;
-}
- // Merge Algorithm
- void merge(char*** data, int left, int mid, int right, int fieldIndex, bool ascending, bool isDate) {
-    int n1 = mid - left + 1;
-    int n2 = right - mid;
+} 
+// Merge Algorithm
+void merge(char*** data, int left, int mid, int right, int fieldIndex, bool ascending, bool isDate, char*** temp) {
+    int i = left, j = mid + 1, k = left;
 
-    char*** L = new char**[n1];
-    char*** R = new char**[n2];
-
-    for (int i = 0; i < n1; ++i) L[i] = data[left + i];
-    for (int i = 0; i < n2; ++i) R[i] = data[mid + 1 + i];
-
-    int i = 0, j = 0, k = left;
-    while (i < n1 && j < n2) {
-        bool takeLeft;
+    while (i <= mid && j <= right) {
+        bool takeLeft = false;
         if (isDate) {
-            int d1 = parseDate(L[i][fieldIndex]);
-            int d2 = parseDate(R[j][fieldIndex]);
+            int d1 = parseDate(data[i][fieldIndex]);
+            int d2 = parseDate(data[j][fieldIndex]);
             takeLeft = (ascending && d1 <= d2) || (!ascending && d1 >= d2);
         } else {
-            int cmp = strcmp(L[i][fieldIndex], R[j][fieldIndex]);
+            int cmp = strcmp(data[i][fieldIndex], data[j][fieldIndex]);
             takeLeft = (ascending && cmp <= 0) || (!ascending && cmp >= 0);
         }
-        data[k++] = takeLeft ? L[i++] : R[j++];
+        temp[k++] = takeLeft ? data[i++] : data[j++];
     }
 
-    while (i < n1) data[k++] = L[i++];
-    while (j < n2) data[k++] = R[j++];
+    while (i <= mid) temp[k++] = data[i++];
+    while (j <= right) temp[k++] = data[j++];
 
-    delete[] L;
-    delete[] R;
+    for (int idx = left; idx <= right; ++idx) {
+        data[idx] = temp[idx];
+    }
 }
 
-void mergeSortHelper(char*** data, int left, int right, int fieldIndex, bool ascending, bool isDate) {
-    if (left < right) {
-        int mid = left + (right - left) / 2;
-        mergeSortHelper(data, left, mid, fieldIndex, ascending, isDate);
-        mergeSortHelper(data, mid + 1, right, fieldIndex, ascending, isDate);
-        merge(data, left, mid, right, fieldIndex, ascending, isDate);
-    }
+void mergeSortHelper(char*** data, int left, int right, int fieldIndex, bool ascending, bool isDate, char*** temp) {
+    if (left >= right) return;
+    int mid = (left + right) / 2;
+    mergeSortHelper(data, left, mid, fieldIndex, ascending, isDate, temp);
+    mergeSortHelper(data, mid + 1, right, fieldIndex, ascending, isDate, temp);
+    merge(data, left, mid, right, fieldIndex, ascending, isDate, temp);
 }
 
 SortResult mergeSortArray(dataContainer2D& container, int fieldIndex, bool ascending) {
     SortResult result;
     result.memoryKBUsed = 0;
 
-    size_t memStart = getUsedMemoryKB();
+    size_t memStart = getUsedMemoryBytes();
     Timer timer; timer.begin();
 
     bool isDate = isDateFormat(container.data[0][fieldIndex]);
-    mergeSortHelper(container.data, 0, container.y - 1, fieldIndex, ascending, isDate);
+    char*** temp = new char**[container.y];
+    mergeSortHelper(container.data, 0, container.y - 1, fieldIndex, ascending, isDate, temp);
+    delete[] temp;
 
     timer.finish();
     result.timeMicroseconds = timer.getDurationMicroseconds();
-    result.memoryKBUsed = getUsedMemoryKB() - memStart;
+    result.memoryKBUsed = getUsedMemoryBytes()- memStart;
     return result;
 }
 

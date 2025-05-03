@@ -12,6 +12,11 @@ using fs::path;
 
 using namespace std;
 
+void memoryUsage(const string& sortType, long long& memoryUsed) {
+    PROCESS_MEMORY_COUNTERS pmc;
+        memoryUsed = pmc.WorkingSetSize / 1024;
+}
+
 void questionOne()
 {
     // ARRAY
@@ -21,31 +26,45 @@ void questionOne()
     // Call avg result container for array
     avgSortResult BubbleResultArray, InsertionResultArray, SelectionResultArray, MergeResultArray;
 
-    for(int i = 0; i < 10; i++){
+    for (int i = 0; i < 10; i++) {
+        long long memBefore, memAfter;
+    
         // Array Bubble sort
+        memoryUsage("Before Bubble Sort", memBefore);
         dataContainer2D bubbleData = cloneContainer2D(ct_data);
         SortResult bubbleResult = bubbleSortArray(bubbleData, 4, true);
+        memoryUsage("After Bubble Sort", memAfter);
+        bubbleResult.memoryKBUsed = memAfter - memBefore;
         BubbleResultArray.avgTime += bubbleResult.timeMicroseconds;
         BubbleResultArray.avgMemory += bubbleResult.memoryKBUsed;
         freeContainer(bubbleData);
-
+    
         // Array Insertion sort
+        memoryUsage("Before Insertion Sort", memBefore);
         dataContainer2D insertionData = cloneContainer2D(ct_data);
         SortResult insertionResult = insertionSortArray(insertionData, 4, true);
+        memoryUsage("After Insertion Sort", memAfter);
+        insertionResult.memoryKBUsed = memAfter - memBefore;
         InsertionResultArray.avgTime += insertionResult.timeMicroseconds;
         InsertionResultArray.avgMemory += insertionResult.memoryKBUsed;
         freeContainer(insertionData);
-
+    
         // Array Selection sort
+        memoryUsage("Before Selection Sort", memBefore);
         dataContainer2D selectionData = cloneContainer2D(ct_data);
         SortResult selectionResult = selectionSortArray(selectionData, 4, true);
+        memoryUsage("After Selection Sort", memAfter);
+        selectionResult.memoryKBUsed = memAfter - memBefore;
         SelectionResultArray.avgTime += selectionResult.timeMicroseconds;
         SelectionResultArray.avgMemory += selectionResult.memoryKBUsed;
         freeContainer(selectionData);
-
+    
         // Array Merge sort
+        memoryUsage("Before Merge Sort", memBefore);
         dataContainer2D mergeData = cloneContainer2D(ct_data);
         SortResult mergeResult = mergeSortArray(mergeData, 4, true);
+        memoryUsage("After Merge Sort", memAfter);
+        mergeResult.memoryKBUsed = memAfter - memBefore;
         MergeResultArray.avgTime += mergeResult.timeMicroseconds;
         MergeResultArray.avgMemory += mergeResult.memoryKBUsed;
         freeContainer(mergeData);
@@ -127,7 +146,6 @@ void questionOne()
     cout << "-----------------------------------------" << endl;
 
 }
-
 
 void questionTwo(){
     // Array
@@ -389,5 +407,5 @@ void question_delete(){
 
 int main() 
 {
-
+    questionOne();
 }   

@@ -244,6 +244,14 @@ size_t getUsedMemoryBytes() {
     return memInfo.WorkingSetSize;
 }
 
+size_t GetCurrentMemory() {
+    PROCESS_MEMORY_COUNTERS_EX pmc;
+    if (GetProcessMemoryInfo(GetCurrentProcess(), (PROCESS_MEMORY_COUNTERS*)&pmc, sizeof(pmc))) {
+        return pmc.PrivateUsage;  // More stable memory usage measure in bytes
+    }
+    return 0;
+}
+
 size_t getUsedMemoryKB() { 
     return getUsedMemoryBytes() / 1024; 
 }
