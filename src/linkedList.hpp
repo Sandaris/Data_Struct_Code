@@ -179,11 +179,17 @@ struct LinkedList
         }
     }
 
-    int deleteRows(const string& columnName,
+    SearchResult deleteRows(const string& columnName,
                    const string& value)
     {
-        using namespace chrono;
-        auto start = high_resolution_clock::now();
+
+        SearchResult meta;
+
+        Timer timer;
+        timer.begin();
+        
+        meta.memoryUsed = 0;
+        size_t memStart = getUsedMemoryKB();
 
         // find the index of the column
         int colIdx = -1;
@@ -215,11 +221,11 @@ struct LinkedList
             cur = nxt;
         }
 
-        auto end = high_resolution_clock::now();
-        auto duration = duration_cast<microseconds>(end - start).count();
-        cout << "Time taken for deletion: " << duration << " ms\n";
-        
-        return static_cast<int>(duration);
+        timer.finish();
+        result.timeMicroseconds = timer.getDurationMicroseconds();
+        result.memoryKBUsed = getUsedMemoryKB() - memStart;
+
+        return meta;
     }
 
     /*
@@ -284,7 +290,16 @@ struct LinkedList
         return result;  
     }
 
-    void insertNewRowFromInput() {
+    SearchResult insertNewRowFromInput() {
+
+        SearchResult meta;
+
+        Timer timer;
+        timer.begin();
+        
+        meta.memoryUsed = 0;
+        size_t memStart = getUsedMemoryKB();
+
         if (!fieldHead || x == 0) {
             cout << "Error: Header fields are not initialized.\n";
             return;
@@ -347,6 +362,11 @@ struct LinkedList
     
         y++; // increment row count
         cout << "New row successfully added. Total rows: " << y << "\n";
+        timer.finish();
+        result.timeMicroseconds = timer.getDurationMicroseconds();
+        result.memoryKBUsed = getUsedMemoryKB() - memStart;
+
+        return meta;
     }
 };
 
@@ -766,6 +786,7 @@ LinkedList LL_binarySearch(
     return result;
 }
 
+//////////////////////////////////////////////////////////////////////// Word Frequency Function ////////////////////////////////////////////////////////////////////////
 
 /*
    SearchResult linearMeta;
@@ -878,10 +899,6 @@ void printDataContainer(dataContainer2D& dc)
     // 3) Free all allocated memory
     freeContainer(dc);
 }
-
-
-
-
 /*    
     You Basically just copy paste the code into the main function and run : 
 

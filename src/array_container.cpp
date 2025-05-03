@@ -97,6 +97,7 @@ void array_questionThree(){
     dataContainer2D OneStar = Array_LinearSearch(cr_data, 2, "1", OneStarResult);
 
     WordFrequency wf = getWordFrequencyArray(OneStar, 3);
+    WFsort(wf);
 
     cout << "-----------------------------------------" << endl;
     cout << "Number of reviews in cleaned_reviews.csv: " << cr_data.y << endl;
@@ -104,7 +105,7 @@ void array_questionThree(){
     cout << "Number of words in cleaned_reviews.csv: " << wf.size << endl;
     cout << "-----------------------------------------" << endl;
 
-    for (int i = 0; i < wf.size; ++i) {
+    for (int i = 0; i < 10; ++i) {
         cout << wf.words[i] << ": " << wf.counts[i] << endl;
     }
 

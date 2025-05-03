@@ -35,6 +35,20 @@ dataContainer2D cloneContainer2D(const dataContainer2D& original) {
     return copy;
 }
 
+void WFsort(WordFrequency& freq) {
+    // Simple bubble sort or you can use std::vector with std::sort for efficiency
+    for (int i = 0; i < freq.size - 1; ++i) {
+        for (int j = 0; j < freq.size - i - 1; ++j) {
+            if (freq.counts[j] < freq.counts[j + 1]) {
+                // Swap counts
+                std::swap(freq.counts[j], freq.counts[j + 1]);
+                // Swap corresponding words
+                std::swap(freq.words[j], freq.words[j + 1]);
+            }
+        }
+    }
+}
+
 ///////////////////////////////////// Read function /////////////////////////////////////////////
 char** splitCustom(const std::string& line, int expectedFields, int& count) {
     char** tokens = new char*[expectedFields];
@@ -163,7 +177,7 @@ dataContainer2D getData(const std::string& filename) {
     SortResult result;
     result.memoryKBUsed = 0;
 
-    size_t memStart = getUsedMemoryBytes();
+    size_t memStart = getUsedMemoryKB();
     Timer timer; timer.begin();
 
     bool isDate = isDateFormat(container.data[0][fieldIndex]);
@@ -194,7 +208,7 @@ dataContainer2D getData(const std::string& filename) {
 
     timer.finish();
     result.timeMicroseconds = timer.getDurationMicroseconds();
-    result.memoryKBUsed = getUsedMemoryBytes() - memStart;
+    result.memoryKBUsed = getUsedMemoryKB() - memStart;
     return result;
 }
  // Insertion Algorithm
@@ -202,7 +216,7 @@ dataContainer2D getData(const std::string& filename) {
     SortResult result;
     result.memoryKBUsed = 0;
 
-    size_t memStart = getUsedMemoryBytes();
+    size_t memStart = getUsedMemoryKB();
     Timer timer; timer.begin();
 
     bool isDate = isDateFormat(container.data[0][fieldIndex]);
@@ -235,7 +249,7 @@ dataContainer2D getData(const std::string& filename) {
 
     timer.finish();
     result.timeMicroseconds = timer.getDurationMicroseconds();
-    result.memoryKBUsed = getUsedMemoryBytes() - memStart;
+    result.memoryKBUsed = getUsedMemoryKB() - memStart;
     return result;
 }
  // Merge Algorithm

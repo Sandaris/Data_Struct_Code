@@ -42,8 +42,8 @@ struct SearchResult {
 
 ///////////////////////////////////// SortResult Struct /////////////////////////////////////
 struct SortResult {
-    long long timeMicroseconds;
-    size_t memoryKBUsed = 0;
+    long long timeMicroseconds = 0;
+    long long memoryKBUsed = 0;
 };
 
 ///////////////////////////////////// frequency Struct /////////////////////////////////////
@@ -59,8 +59,8 @@ struct WordFrequency {
 ///////////////////////////////////// avgSortResult Struct /////////////////////////////////////
 struct avgSortResult
 {
-    int avgTime = 0;
-    int avgMemory = 0;
+    long long avgTime = 0;
+    long long avgMemory = 0;
 };
 
 ///////////////////////////////////// Free Array Container Memory /////////////////////////////////////////////
