@@ -4,7 +4,7 @@
 #include <sstream>
 #include <filesystem>
 
-#include "common_function.hpp"
+#include "LinkedList.hpp"
 #include "Array.hpp"
 
 namespace fs = std::filesystem;
@@ -82,6 +82,10 @@ void questionOne()
 
     // LINKED LIST
 
+    LinkedList original;
+    original.loadFromCSV("cleaned_transactions.csv");
+    LinkedList clone = cloneList(original);
+    LinkedList sorted = mergeSortLinked(clone, "A", true);
 
 }
 

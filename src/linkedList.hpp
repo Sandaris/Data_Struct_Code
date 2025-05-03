@@ -222,8 +222,8 @@ struct LinkedList
         }
 
         timer.finish();
-        result.timeMicroseconds = timer.getDurationMicroseconds();
-        result.memoryKBUsed = getUsedMemoryKB() - memStart;
+        meta.timeMicroseconds = timer.getDurationMicroseconds();
+        meta.memoryUsed = getUsedMemoryKB() - memStart;
 
         return meta;
     }
@@ -302,7 +302,7 @@ struct LinkedList
 
         if (!fieldHead || x == 0) {
             cout << "Error: Header fields are not initialized.\n";
-            return;
+            return 0;
         }
     
         Node* newNode = new Node(x);
@@ -363,8 +363,8 @@ struct LinkedList
         y++; // increment row count
         cout << "New row successfully added. Total rows: " << y << "\n";
         timer.finish();
-        result.timeMicroseconds = timer.getDurationMicroseconds();
-        result.memoryKBUsed = getUsedMemoryKB() - memStart;
+        meta.timeMicroseconds = timer.getDurationMicroseconds();
+        meta.memoryKBUsed = getUsedMemoryKB() - memStart;
 
         return meta;
     }
