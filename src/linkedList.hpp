@@ -776,82 +776,85 @@ std::cout << "Linear search took " << linearMeta.timeMicroseconds << " µs and f
 WordFrequency countTopWordsFromLinkedList(const LinkedList& list,
     const string& columnName,
     int topN = 10) {
-WordFrequency wf;
-wf.size = 0;
-wf.capacity = topN;
-wf.words = new char*[topN];
-wf.counts = new int[topN];
+    WordFrequency wf;
+    wf.size = 0;
+    wf.capacity = topN;
+    wf.words = new char*[topN];
+    wf.counts = new int[topN];
 
-for (int i = 0; i < topN; ++i) {
-wf.words[i] = nullptr;
-wf.counts[i] = 0;
-}
+    for (int i = 0; i < topN; ++i) {
+    wf.words[i] = nullptr;
+    wf.counts[i] = 0;
+    }
 
-size_t memStart = getUsedMemoryKB() * 1024;
-auto start = chrono::high_resolution_clock::now();
+    size_t memStart = getUsedMemoryKB() * 1024;
+    auto start = chrono::high_resolution_clock::now();
 
-// Step 1: Find column index
-int col = -1;
-for (int i = 0; i < list.x; ++i) {
-if (list.fieldHead[i] == columnName) {
-col = i;
-break;
-}
-}
-if (col < 0) {
-wf.timeMicroseconds = 0;
-wf.memoryUsed = 0;
-return wf;
-}
+    // Step 1: Find column index
+    int col = -1;
+    for (int i = 0; i < list.x; ++i) {
+    if (list.fieldHead[i] == columnName) {
+    col = i;
+    break;
+    }
+    }
+    if (col < 0) {
+    wf.timeMicroseconds = 0;
+    wf.memoryUsed = 0;
+    return wf;
+    }
 
-// Step 2: Count word frequencies
-unordered_map<string, int> freq;
-for (Node* cur = list.head; cur; cur = cur->next) {
-const string& s = cur->data[col];
-string token;
-for (unsigned char c : s) {
-if (isalnum(c)) token += tolower(c);
-else if (!token.empty()) {
-++freq[token];
-token.clear();
-}
-}
-if (!token.empty()) ++freq[token];
-}
+    // Step 2: Count word frequencies
+    unordered_map<string, int> freq;
+    for (Node* cur = list.head; cur; cur = cur->next) {
+    const string& s = cur->data[col];
+    string token;
+    for (unsigned char c : s) {
+    if (isalnum(c)) token += tolower(c);
+    else if (!token.empty()) {
+    ++freq[token];
+    token.clear();
+    }
+    }
+    if (!token.empty()) ++freq[token];
+    }
 
-// Step 3: Pick top N using repeated max scan
-struct Pair { string w; int c; };
-vector<Pair> picks;
-picks.reserve(topN);
+    // Step 3: Pick top N using repeated max scan
+    struct Pair { string w; int c; };
+    vector<Pair> picks;
+    picks.reserve(topN);
 
-for (int count = 0; count < topN; ++count) {
-string best;
-int bestC = 0;
-for (auto& kv : freq) {
-if (kv.second > bestC) {
-best = kv.first;
-bestC = kv.second;
-}
-}
-if (bestC == 0) break;
-picks.push_back({best, bestC});
-freq[best] = -1;
-}
+    for (int count = 0; count < topN; ++count) 
+    {
+        string best;
+        int bestC = 0;
+        for (auto& kv : freq) 
+        {
+            if (kv.second > bestC) 
+            {
+                best = kv.first;
+                bestC = kv.second;
+            }
+        }
+    if (bestC == 0) break;
+        picks.push_back({best, bestC});
+        freq[best] = -1;
+    }
 
-// Step 4: Copy into WordFrequency container
-wf.size = picks.size();
-for (int i = 0; i < wf.size; ++i) {
-wf.words[i] = strdup(picks[i].w.c_str());
-wf.counts[i] = picks[i].c;
-}
+    // Step 4: Copy into WordFrequency container
+    wf.size = picks.size();
+    for (int i = 0; i < wf.size; ++i) {
+    wf.words[i] = strdup(picks[i].w.c_str());
+    wf.counts[i] = picks[i].c;
+    }
 
-auto end = chrono::high_resolution_clock::now();
-size_t memEnd = getUsedMemoryKB() * 1024;
+    auto end = chrono::high_resolution_clock::now();
+    size_t memEnd = getUsedMemoryKB() * 1024;
 
-wf.timeMicroseconds = chrono::duration_cast<chrono::microseconds>(end - start).count();
-wf.memoryUsed = memEnd - memStart;
+    wf.timeMicroseconds = chrono::duration_cast<chrono::microseconds>(end - start).count();
+    wf.memoryUsed = memEnd - memStart;
 
-return wf;
+    return wf;
 }
 
 

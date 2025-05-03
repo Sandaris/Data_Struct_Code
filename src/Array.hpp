@@ -569,46 +569,6 @@ bool deleteRowByValue(dataContainer2D& container, int fieldIndex, const char* va
     return false; // not found
 }
 
-/*
-// 1. Create a new row
-char** newRow = new char*[cleaned_review_data.x];
-newRow[0] = strdup("CUST0000");
-newRow[1] = strdup("Mouse");
-newRow[2] = strdup("Books");
-newRow[3] = strdup("999.99");
-newRow[4] = strdup("30/04/2024");
-newRow[5] = strdup("Credit Card");
-
-// 2. Insert into container
-insertRow(cleaned_review_data, newRow);
-
-// 3. Delete row by value
-deleteRowByValue(cleaned_review_data, 0, "CUST4434");
-
-// Don't forget to free newRow to avoid memory leak
-for (int i = 0; i < cleaned_review_data.x; ++i) {
-    free(newRow[i]);
-}
-delete[] newRow;
-*/
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 dataContainer2D writeNewLines(dataContainer2D dc, const char* newValues[], int recordLen) {
     // 1) Validation: must match number of columns
     if (recordLen != dc.x) {
