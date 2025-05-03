@@ -4,7 +4,7 @@
 #include <sstream>
 #include <filesystem>
 
-#include "common_function.hpp"
+//#include "common_function.hpp"
 #include "Array.hpp"
 
 namespace fs = std::filesystem;
