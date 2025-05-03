@@ -4,6 +4,7 @@
 #include <stdexcept>
 #include <sstream>
 #include <cstring>
+#include <limits>
 #ifndef COMMON_FUNCTION_HPP
 #define COMMON_FUNCTION_HPP
 
@@ -269,8 +270,7 @@ void menu()
         cin >> choice;
 
         if (cin.fail() || choice < 1 || choice > 6) {
-            cin.clear(); // clear the error flag
-            cin.ignore(numeric_limits<streamsize>::max(), '\n'); // discard invalid input
+            cin.clear(); // clear the error flag // discard invalid input
             system("cls");
             cout << "Invalid choice. Please enter a number between 1 and 6. Press Enter to Continue...\n";
             cin.get(); // wait for user to press Enter before clearing the screen
