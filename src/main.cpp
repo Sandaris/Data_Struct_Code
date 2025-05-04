@@ -319,9 +319,10 @@ void questionThree() {
 
     WordFrequency wf = getWordFrequencyArray(OneStar, 3); // Column 3 = Review Text
 
-    long long memoryBeforeSortArray = getMemoryUsageKB();
+    long long memoryBeforeSortArray, memoryAfterSortArray;
+    memoryUsage("Before Array Sort", memoryBeforeSortArray);
     WFsort(wf);
-    long long memoryAfterSortArray = getMemoryUsageKB();
+    memoryUsage("After Array Sort", memoryAfterSortArray);
     wf.memoryUsed = memoryAfterSortArray - memoryBeforeSortArray;
 
     cout << "-----------------------------------------" << endl;
@@ -352,9 +353,10 @@ void questionThree() {
 
     LinkedList OneStarLL = original.linearKeepRows("Rating", "1");
 
-    long long memoryBeforeSortLL = getMemoryUsageKB();
+    long long memoryBeforeSortLL, memoryAfterSortLL;
+    memoryUsage("Before Linked List Sort", memoryBeforeSortLL);
     WordFrequency wfLL = countTopWordsFromLinkedList(OneStarLL, "Review Text", 10);
-    long long memoryAfterSortLL = getMemoryUsageKB();
+    memoryUsage("After Linked List Sort", memoryAfterSortLL);
     wfLL.memoryUsed = memoryAfterSortLL - memoryBeforeSortLL;
 
     cout << "-----------------------------------------" << endl;
@@ -388,9 +390,9 @@ void question_insert() {
     const char * newRecord[] = {"PROD441", "CUST0001", "1", "This is a new review."};
     int recordSize = 4;
 
-    getMemoryUsage(memBefore);
+    memoryUsage("Before Array Insert", memBefore);
     dataContainer2D UpdatedData = writeNewLines(cr_data, newRecord, recordSize, ArrayInsertResult);
-    getMemoryUsage(memAfter);
+    memoryUsage("After Array Insert", memAfter);
     ArrayInsertResult.memory = (memAfter - memBefore) * 1024; // in bytes
 
     cout << "-----------------------------------------" << endl;
@@ -416,9 +418,9 @@ void question_insert() {
 
     const char * newRow[] = {"PROD424", "CUST0001", "3", "This is a new review."};
 
-    getMemoryUsage(memBefore);
+    memoryUsage("Before Linked List Insert", memBefore);
     LinkedList updatedLL = insertNewRowLinkedList(original, newRow, 4, LLInsertResult);
-    getMemoryUsage(memAfter);
+    memoryUsage("After Linked List Insert", memAfter);
     LLInsertResult.memory = (memAfter - memBefore) * 1024;
 
     cout << "-----------------------------------------" << endl;
@@ -443,9 +445,9 @@ void question_delete() {
     dataContainer2D cr_data = getData("cleaned_reviews.csv");
     InsDelResult ArrayDeleteResult;
 
-    getMemoryUsage(memBefore);
+    memoryUsage("Before Array Delete", memBefore);
     dataContainer2D deletedData = deleteAllRecords(cr_data, "Customer ID", "CUST5045", ArrayDeleteResult);
-    getMemoryUsage(memAfter);
+    memoryUsage("After Array Delete", memAfter);
     ArrayDeleteResult.memory = (memAfter - memBefore) * 1024;
 
     cout << "-----------------------------------------" << endl;
@@ -462,9 +464,9 @@ void question_delete() {
     originalList.loadFromCSV("cleaned_reviews.csv");
     InsDelResult LLDeleteResult;
 
-    getMemoryUsage(memBefore);
+    memoryUsage("Before Linked List Delete", memBefore);
     LinkedList deletedLL = deleteRows(originalList, "Customer ID", "CUST7710", LLDeleteResult);
-    getMemoryUsage(memAfter);
+    nemoryUsage("After Linked List Delete", memAfter);
     LLDeleteResult.memory = (memAfter - memBefore) * 1024;
 
     cout << "-----------------------------------------" << endl;
