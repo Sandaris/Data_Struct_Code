@@ -4,12 +4,29 @@
 #include <filesystem>
 #include <unordered_map>
 #include <regex>
+#include <stdexcept>
 
 #include "common_function.hpp"
 
 namespace fs = std::filesystem;
 using namespace std;
 using namespace std::chrono;
+
+/////////////////////////////CLEAR THE SCREEN ///////////////////////////////////////////////////////////////
+void clearScreen() {
+    #ifdef _WIN32
+        system("cls");
+    #else
+        system("clear");
+    #endif
+}
+
+inline void removeUTF8BOM(std::string& s) {
+    static const std::string BOM = "\xEF\xBB\xBF";
+    if (s.rfind(BOM, 0) == 0) {
+        s.erase(0, BOM.size());
+    }
+}
 
 // Node: holds one CSV row of x columns
 struct Node 
@@ -50,6 +67,16 @@ struct LinkedList
             delete cur;
             cur = nxt;
         }
+    }
+
+    static std::string sanitize(const std::string& cell) {
+        size_t i = 0;
+        while (i < cell.size() &&
+               (static_cast<unsigned char>(cell[i]) < 32  // control chars
+                || static_cast<unsigned char>(cell[i]) > 126)) {
+            ++i;
+        }
+        return cell.substr(i);
     }
 
 // Load a CSV from ../data/filename into this list
@@ -104,6 +131,7 @@ struct LinkedList
        string line;
        // --- 1) Read header line and count columns ---
        if (!getline(in, line)) return false;
+       removeUTF8BOM(line);
        x = 1;
        for (char c : line) if (c == ',') ++x;
        fieldHead = new string[x];
@@ -131,6 +159,7 @@ struct LinkedList
    
        // --- 3) Read each subsequent row, same logic ---
        while (getline(in, line)) {
+            removeUTF8BOM(line);
            if (line.empty()) continue;
    
            Node* node = new Node(x);
@@ -176,13 +205,27 @@ struct LinkedList
         // rows
         for (Node* cur = head; cur; cur = cur->next) {
             for (int i = 0; i < x; ++i) {
-                cout << cur->data[i]
+                cout << sanitize(cur->data[i])
                      << (i+1 < x ? " | " : "\n");
             }
         }
     }
 
-    void printForward(int index) const {
+    void printForward(int N) const {
+        Node* cur = head;
+        int count = 0;
+        while (cur != nullptr && count < N) {
+            // print all columns of this row
+            for (int i = 0; i < x; ++i) {
+                cout << sanitize(cur->data[i])
+                     << (i+1 < x ? " | " : "\n");
+            }
+            cur = cur->next;
+            ++count;
+        }
+    }
+
+    void printRow(int index) const {
         // sanity check
         if (index < 0 || index >= y) {
             std::cerr << "Error: index " << index << " out of range (0–" << (y-1) << ")\n";
@@ -204,6 +247,19 @@ struct LinkedList
         }
     }
 
+    void printBackward(int N) const {
+        Node* cur = tail;
+        int count = 0;
+        while (cur != nullptr && count < N) {
+            // print all columns of this row
+            for (int i = 0; i < x; ++i) {
+                cout << sanitize(cur->data[i])
+                     << (i+1 < x ? " | " : "\n");
+            }
+            cur = cur->prev;
+            ++count;
+        }
+    }
 
 
 
@@ -267,7 +323,200 @@ struct LinkedList
         return result;  
     }
 
+    void keepFirstRows(int N) {
+        // Clear everything if N <= 0
+        if (N <= 0) {
+            Node* cur = head;
+            while (cur) {
+                Node* nxt = cur->next;
+                delete cur;
+                cur = nxt;
+            }
+            head = tail = nullptr;
+            y = 0;
+            return;
+        }
+        // If N >= current row‐count, nothing to do
+        if (N >= y) return;
+
+        // Walk to the N-th node
+        Node* cur = head;
+        for (int i = 1; i < N; ++i) {
+            cur = cur->next;
+        }
+        // 'cur' is now the last node to keep
+        Node* toRemove = cur->next;
+        cur->next = nullptr;
+        tail = cur;
+
+        // Delete all the nodes after it
+        while (toRemove) {
+            Node* nxt = toRemove->next;
+            delete toRemove;
+            toRemove = nxt;
+        }
+
+        // Update row count
+        y = N;
+    }
+
+    void insertNewRowFromInput() {
+        if (!fieldHead || x == 0) {
+            cout << "Error: Header fields are not initialized.\n";
+            return;
+        }
+    
+        Node* newNode = new Node(x);
+        cout << "Enter data for the new row:\n";
+    
+        for (int i = 0; i < x; ++i) {
+            string value;
+            string field = fieldHead[i];
+    
+            while (true) {
+                cout << field << ": ";
+                getline(cin, value);
+    
+                bool valid = true;
+    
+                // Validation rules based on field name
+                if (field == "Date") {
+                    regex date_regex(R"(^\d{2}/\d{2}/\d{4}$)");
+                    valid = regex_match(value, date_regex);
+                    if (!valid) cout << "Format must be dd/mm/yyyy.\n";
+                }
+                else if (field == "Customer ID") {
+                    regex id_regex(R"(^CUST\d{4}$)");
+                    valid = regex_match(value, id_regex);
+                    if (!valid) cout << "Format must be CUSTXXXX.\n";
+                }
+                else if (field == "Product ID") {
+                    regex prod_regex(R"(^PROD\d{3}$)");
+                    valid = regex_match(value, prod_regex);
+                    if (!valid) cout << "Format must be PRODXXX.\n";
+                }
+                else if (field == "Price") {
+                    regex price_regex(R"(^\d+(\.\d{1,2})?$)");
+                    valid = regex_match(value, price_regex);
+                    if (!valid) cout << "Price must be a number with max 2 decimal places.\n";
+                }
+                else if (field == "Rating") {
+                    regex rating_regex(R"(^[1-5]$)");
+                    valid = regex_match(value, rating_regex);
+                    if (!valid) cout << "Rating must be an integer from 1 to 5.\n";
+                }
+    
+                if (valid) break;
+            }
+    
+            newNode->data[i] = value;
+        }
+    
+        // Append node to the list
+        if (!head) {
+            head = tail = newNode;
+        } else {
+            tail->next = newNode;
+            newNode->prev = tail;
+            tail = newNode;
+        }
+    
+        y++; // increment row count
+    }
+
+    void insertNewRowArray(const char* newValues[]) {
+        if (!fieldHead || x == 0) {
+            std::cerr << "Error: Header fields are not initialized.\n";
+            return;
+        }
+
+        // Allocate and populate the new node
+        Node* newNode = new Node(x);
+        for (int i = 0; i < x; ++i) {
+            newNode->data[i] = std::string(newValues[i]);
+        }
+
+        // Append to tail
+        if (!head) {
+            head = tail = newNode;
+        } else {
+            tail->next   = newNode;
+            newNode->prev = tail;
+            tail          = newNode;
+        }
+
+        y++;  // increment row count
+    }
+
+    void insertNewTopRowArray(const char* newValues[]) {
+        if (!fieldHead || x == 0) {
+            std::cerr << "Error: Header fields are not initialized.\n";
+            return;
+        }
+
+        // Allocate and populate the new node
+        Node* newNode = new Node(x);
+        for (int i = 0; i < x; ++i) {
+            newNode->data[i] = std::string(newValues[i]);
+        }
+
+        // Prepend to head
+        if (!head) {
+            head = tail = newNode;
+        } else {
+            newNode->next = head;
+            head->prev = newNode;
+            head = newNode;
+        }
+
+        y++;  // increment row count
+    }
+
+    int deleteRows(const string& columnName,
+                   const string& value)
+    {
+        using namespace chrono;
+        auto start = high_resolution_clock::now();
+
+        // find the index of the column
+        int colIdx = -1;
+        for (int i = 0; i < x; ++i) {
+            if (fieldHead[i] == columnName) {
+                colIdx = i;
+                break;
+            }
+        }
+        if (colIdx < 0) {
+            cerr << "Error: column '" << columnName << "' not found\n";
+            return 0;
+        }
+
+        // now delete matching nodes
+        Node* cur = head;
+        while (cur) {
+            Node* nxt = cur->next;
+            if (cur->data[colIdx] == value) {
+                if (cur->prev) cur->prev->next = cur->next;
+                else           head = cur->next;
+
+                if (cur->next) cur->next->prev = cur->prev;
+                else           tail = cur->prev;
+
+                delete cur;
+                --y;
+            }
+            cur = nxt;
+        }
+
+        auto end = high_resolution_clock::now();
+        auto duration = duration_cast<microseconds>(end - start).count();
+        cout << "Time taken for deletion: " << duration << " ms\n";
+        
+        return static_cast<int>(duration);
+    }
+
 };
+
 
 LinkedList insertNewRowLinkedList(LinkedList list, const char* newValues[], int recordLen, InsDelResult& result) {
     result.memory = 0;
@@ -296,6 +545,49 @@ LinkedList insertNewRowLinkedList(LinkedList list, const char* newValues[], int 
         list.tail->next = newNode;
         newNode->prev = list.tail;
         list.tail = newNode;
+    }
+
+    list.y++;  // Increase row count
+
+    result.memory = getUsedMemoryKB() - memStart;
+    timer.finish();
+    result.time = timer.getDurationMicroseconds();
+
+    return list;
+}
+
+LinkedList insertNewTopLinkedList(LinkedList list,
+                                  const char* newValues[],
+                                  int recordLen,
+                                  InsDelResult& result) {
+    result.memory = 0;
+    result.time   = 0;
+
+    Timer timer;
+    timer.begin();
+    size_t memStart = getUsedMemoryKB();
+
+    // Validate column count
+    if (recordLen != list.x || list.fieldHead == nullptr || list.x == 0) {
+        std::cerr << "Error: Field count mismatch or header not initialized.\n";
+        return list;
+    }
+
+    // Create new node and assign values
+    Node* newNode = new Node(list.x);
+    for (int i = 0; i < list.x; ++i) {
+        newNode->data[i] = std::string(newValues[i]);
+    }
+
+    // **PREPEND** node to the list (instead of append)
+    if (!list.head) {
+        // empty list → newNode is both head and tail
+        list.head = list.tail = newNode;
+    } else {
+        // link it before the old head
+        newNode->next      = list.head;
+        list.head->prev    = newNode;
+        list.head          = newNode;
     }
 
     list.y++;  // Increase row count
@@ -443,6 +735,35 @@ SortResult bubbleSortLinked(LinkedList& list, const string& columnName) {
     result.memoryKBUsed = getUsedMemoryKB() - memStart;
 
     return result;
+}
+
+void bubbleSort(LinkedList& list, const string& columnName) 
+{
+    // 1) find the column index
+    int colIndex = -1;
+    for (int i = 0; i < list.x; ++i) {
+        if (list.fieldHead[i] == columnName) {
+            colIndex = i;
+            break;
+        }
+    }
+    if (colIndex < 0) {
+        cerr << "Error: column \"" << columnName << "\" not found.\n";
+        return;
+    }
+
+    // 3) bubble‐sort by swapping data pointers
+    bool swapped;
+    do {
+        swapped = false;
+        for (Node* cur = list.head; cur && cur->next; cur = cur->next) {
+            if (cur->data[colIndex] > cur->next->data[colIndex]) {
+                swap(cur->data, cur->next->data);
+                swapped = true;
+            }
+        }
+    } while (swapped);
+
 }
 
 SortResult selectionSortLinked(LinkedList& list, const string& columnName) {
@@ -891,6 +1212,82 @@ void printDataContainer(dataContainer2D& dc)
     // 3) Free all allocated memory
     freeContainer(dc);
 }
+
+const char** getValidatedNewRecord(const std::string fieldHead[], int x) {
+    // allocate array of pointers
+    char** newRecord = new char*[x];
+    std::string value;
+
+    // pre-compile your regexes once
+    std::regex date_rg(R"(^\d{2}/\d{2}/\d{4}$)");
+    std::regex cust_rg(R"(^CUST\d{4}$)");
+    std::regex prod_rg(R"(^PROD\d{3}$)");
+    std::regex price_rg(R"(^\d+(\.\d{1,2})?$)");
+    std::regex rating_rg(R"(^[1-5]$)");
+
+    for (int i = 0; i < x; ++i) {
+        const std::string& field = fieldHead[i];
+        bool valid = false;
+
+        do {
+            std::cout << field << ": ";
+            std::getline(std::cin, value);
+
+            if (field == "Date") {
+                valid = std::regex_match(value, date_rg);
+                if (!valid)
+                {
+                    clearScreen();
+                    std::cout << "Format must be dd/mm/yyyy.\n";
+                }
+            }
+            else if (field == "Customer ID") {
+                valid = std::regex_match(value, cust_rg);
+                if (!valid) 
+                {
+                    clearScreen();
+                    std::cout << "Format must be CUSTXXXX.\n";
+                }
+            }
+            else if (field == "Product ID") {
+                valid = std::regex_match(value, prod_rg);
+                if (!valid) 
+                {
+                    clearScreen();
+                    std::cout << "Format must be PRODXXX.\n";
+                }
+            }
+            else if (field == "Price") {
+                valid = std::regex_match(value, price_rg);
+                if (!valid)
+                {
+                    clearScreen();
+                    std::cout << "Price must be a number with up to 2 decimal places.\n";
+                }
+            }
+            else if (field == "Rating") {
+                valid = std::regex_match(value, rating_rg);
+                if (!valid) 
+                {
+                    clearScreen();
+                    std::cout << "Rating must be an integer from 1 to 5.\n";
+                }
+            }
+            else {
+                // any other field: accept anything
+                valid = true;
+            }
+        } while (!valid);
+
+        // copy into a C‑string buffer
+        char* buf = new char[value.size() + 1];
+        std::strcpy(buf, value.c_str());
+        newRecord[i] = buf;
+    }
+
+    return const_cast<const char**>(newRecord);
+}
+
 /*    
     You Basically just copy paste the code into the main function and run : 
 

@@ -575,6 +575,55 @@ dataContainer2D writeNewLines(dataContainer2D dc, const char* newValues[], int r
     return dc;
 }
 
+dataContainer2D writeNewTopLines(dataContainer2D dc,
+                              const char* newValues[],
+                              int recordLen,
+                              InsDelResult& result)
+{
+    result.memory = 0;
+    result.time   = 0;
+
+    Timer timer; timer.begin();
+    size_t memStart = getUsedMemoryKB();
+
+    // 1) Validation: must match number of columns
+    if (recordLen != dc.x) {
+        std::cerr << "Error: expected " << dc.x
+                  << " values but got " << recordLen << "\n";
+        dc.error = -1;
+        return dc;
+    }
+
+    // 2) Allocate new array of row‑pointers, size = old rows + 1
+    char*** newData = new char**[dc.y + 1];
+
+    // 3) Allocate & fill the new row
+    char** newRow = new char*[dc.x];
+    for (int j = 0; j < dc.x; ++j) {
+        newRow[j] = strdup(newValues[j]);  // duplicate each C‑string
+    }
+    // 4) Insert the new row at the top
+    newData[0] = newRow;
+
+    // 5) Shift existing rows down by one
+    for (int i = 0; i < dc.y; ++i) {
+        newData[i + 1] = dc.data[i];
+    }
+
+    // 6) Clean up old “data” array (but not the row contents)
+    delete[] dc.data;
+
+    // 7) Update container
+    dc.data = newData;
+    dc.y   += 1;
+
+    result.memory = getUsedMemoryKB() - memStart;
+    timer.finish();
+    result.time = timer.getDurationMicroseconds();
+
+    return dc;
+}
+
 ///////////////////////////////////// Delete function /////////////////////////////////////
 dataContainer2D deleteRecord(dataContainer2D dc, const char* columnName, const char* key) {
 
