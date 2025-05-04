@@ -139,70 +139,6 @@ void questionOne()
     cout << "Number of transactions in cleaned_transactions.csv: " << original.y<< endl;
     cout << "-----------------------------------------" << endl;
     
-    //      // shorten to four algorithm names
-    //      const char* names[4] = 
-    //      {
-    //         "Bubble Sort",
-    //         "Selection Sort",
-    //         "Insertion Sort",
-    //         "Merge Sort"
-    //     };
-    
-    //     // split LL vs Array for easy looping
-    //     avgSortResult resultsLL[4]    = { BubbleResultLL, InsertionResultLL, SelectionResultLL, MergeResultLL };
-    //     avgSortResult resultsArr[4]   = { BubbleResultArray, InsertionResultArray, SelectionResultArray, MergeResultArray };
-    
-    //     // column widths
-    //     constexpr int COL1 = 15;  // Algorithm
-    //     constexpr int COL2 =  7;  // each numeric column
-    //     // total inner width = COL1 + 4 cols of COL2 + 5 separators ('|')
-    //     int innerW = COL1 + COL2*4 + 5;
-    //     std::string sep(innerW, '-');
-    
-    //     // 1) top border
-    //     std::cout << sep << "\n";
-    
-    //     // 2) centered title
-    //     std::cout << center("Average of 10 Simulations", innerW) << "\n";
-    
-    //     // 3) underline
-    //     std::cout << sep << "\n";
-    
-    //     // 4) two-group header: blank, [ LL ], [ Array ]
-    //     int grpW = COL2*2 + 1;  // spans two sub-columns plus the inner '|'
-    //     std::cout 
-    //         << std::setw(COL1) << "" 
-    //         << "|" << center("LL",    grpW)
-    //         << "|" << center("Array", grpW)
-    //         << "|\n";
-       
-    //    std::cout << std::setw(COL1);
-    
-    //     // 5) sub-headers
-    //     std::cout
-    //         << std::setw(COL1) << std::left   << "Algorithm"
-    //         << "|" << std::setw(COL2) << std::right << "Time"
-    //         << "|" << std::setw(COL2)              << "Memory"
-    //         << "|" << std::setw(COL2)              << "Time"
-    //         << "|" << std::setw(COL2)              << "Memory"
-    //         << "|\n";
-    
-    //     // 6) separator
-    //     std::cout << sep << "\n";
-    
-    //     // 7) data rows
-    //     for (int i = 0; i < 4; ++i) {
-    //         std::cout
-    //             << std::setw(COL1) << std::left   << names[i]
-    //             << "|" << std::setw(COL2) << std::right << resultsLL[i].avgTime/10000
-    //             << "|" << std::setw(COL2)              << resultsLL[i].avgMemory
-    //             << "|" << std::setw(COL2)              << resultsArr[i].avgTime/10000
-    //             << "|" << std::setw(COL2)              << resultsArr[i].avgMemory
-    //             << "|\n";
-    //     }
-    
-    //     // 8) bottom border
-    //     std::cout << sep << "\n";
 }
 
 
@@ -415,7 +351,7 @@ void question_insert(){
     cout << "Time taken: " << LLInsertResult.time << " Micro Seconds\n";
     cout << "Estimated memory: " << LLInsertResult.memory << " bytes\n";
     cout << "-----------------------------------------" << endl;
-    //updatedLL.printForward(3373-1); // Print the 3373th row
+    updatedLL.printForward(); // Print the 3373th row
 
 
 freeContainer(cr_data);
