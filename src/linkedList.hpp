@@ -1,3 +1,5 @@
+#pragma once
+
 #include <functional>
 #include <filesystem>
 #include <unordered_map>
@@ -163,7 +165,8 @@ struct LinkedList
    }
 
     // Print header + all rows in forward order
-    void printForward() const {
+    void printForward() const 
+    {
         // headers
         for (int i = 0; i < x; ++i) {
             cout << fieldHead[i]
@@ -179,48 +182,30 @@ struct LinkedList
         }
     }
 
-    int deleteRows(const string& columnName,
-                   const string& value)
-    {
-        using namespace chrono;
-        auto start = high_resolution_clock::now();
-
-        // find the index of the column
-        int colIdx = -1;
-        for (int i = 0; i < x; ++i) {
-            if (fieldHead[i] == columnName) {
-                colIdx = i;
-                break;
-            }
-        }
-        if (colIdx < 0) {
-            cerr << "Error: column '" << columnName << "' not found\n";
-            return 0;
+    void printForward(int index) const {
+        // sanity check
+        if (index < 0 || index >= y) {
+            std::cerr << "Error: index " << index << " out of range (0–" << (y-1) << ")\n";
+            return;
         }
 
-        // now delete matching nodes
+        cout << "test";
+        // walk to the desired node
         Node* cur = head;
-        while (cur) {
-            Node* nxt = cur->next;
-            if (cur->data[colIdx] == value) {
-                if (cur->prev) cur->prev->next = cur->next;
-                else           head = cur->next;
-
-                if (cur->next) cur->next->prev = cur->prev;
-                else           tail = cur->prev;
-
-                delete cur;
-                --y;
-            }
-            cur = nxt;
+        for (int i = 0; i < index; ++i) {
+            cur = cur->next;
         }
 
-        auto end = high_resolution_clock::now();
-        auto duration = duration_cast<microseconds>(end - start).count();
-        cout << "Time taken for deletion: " << duration << " ms\n";
-        
-        return static_cast<int>(duration);
+        cout << "test";
+        // print only that row
+        for (int i = 0; i < x; ++i) {
+            std::cout << cur->data[i]
+                      << (i+1 < x ? " | " : "\n");
+        }
     }
+
+
+
 
     /*
     call in this way:
@@ -278,78 +263,102 @@ struct LinkedList
         // 4) (optional) measure and print elapsed time
         auto end      = high_resolution_clock::now();
         auto duration = duration_cast<microseconds>(end - start).count();
-        printf("\nSearched \"%s = %s\" in %lld microseconds; found %d rows.\n",
-               columnName.c_str(), searchValue.c_str(), duration, result.y);
 
         return result;  
     }
 
-    void insertNewRowFromInput() {
-        if (!fieldHead || x == 0) {
-            cout << "Error: Header fields are not initialized.\n";
-            return;
-        }
-    
-        Node* newNode = new Node(x);
-        cout << "Enter data for the new row:\n";
-    
-        for (int i = 0; i < x; ++i) {
-            string value;
-            string field = fieldHead[i];
-    
-            while (true) {
-                cout << field << ": ";
-                getline(cin, value);
-    
-                bool valid = true;
-    
-                // Validation rules based on field name
-                if (field == "Date") {
-                    regex date_regex(R"(^\d{2}/\d{2}/\d{4}$)");
-                    valid = regex_match(value, date_regex);
-                    if (!valid) cout << "Format must be dd/mm/yyyy.\n";
-                }
-                else if (field == "Customer ID") {
-                    regex id_regex(R"(^CUST\d{4}$)");
-                    valid = regex_match(value, id_regex);
-                    if (!valid) cout << "Format must be CUSTXXXX.\n";
-                }
-                else if (field == "Product ID") {
-                    regex prod_regex(R"(^PROD\d{3}$)");
-                    valid = regex_match(value, prod_regex);
-                    if (!valid) cout << "Format must be PRODXXX.\n";
-                }
-                else if (field == "Price") {
-                    regex price_regex(R"(^\d+(\.\d{1,2})?$)");
-                    valid = regex_match(value, price_regex);
-                    if (!valid) cout << "Price must be a number with max 2 decimal places.\n";
-                }
-                else if (field == "Rating") {
-                    regex rating_regex(R"(^[1-5]$)");
-                    valid = regex_match(value, rating_regex);
-                    if (!valid) cout << "Rating must be an integer from 1 to 5.\n";
-                }
-    
-                if (valid) break;
-            }
-    
-            newNode->data[i] = value;
-        }
-    
-        // Append node to the list
-        if (!head) {
-            head = tail = newNode;
-        } else {
-            tail->next = newNode;
-            newNode->prev = tail;
-            tail = newNode;
-        }
-    
-        y++; // increment row count
-        cout << "New row successfully added. Total rows: " << y << "\n";
-    }
 };
 
+LinkedList insertNewRowLinkedList(LinkedList list, const char* newValues[], int recordLen, InsDelResult& result) {
+    result.memory = 0;
+    result.time = 0;
+
+    Timer timer;
+    timer.begin();
+    size_t memStart = getUsedMemoryKB();
+
+    // Validate column count
+    if (recordLen != list.x || list.fieldHead == nullptr || list.x == 0) {
+        cerr << "Error: Field count mismatch or header not initialized.\n";
+        return list;
+    }
+
+    // Create new node and assign values
+    Node* newNode = new Node(list.x);
+    for (int i = 0; i < list.x; ++i) {
+        newNode->data[i] = string(newValues[i]);
+    }
+
+    // Append node to the list
+    if (!list.head) {
+        list.head = list.tail = newNode;
+    } else {
+        list.tail->next = newNode;
+        newNode->prev = list.tail;
+        list.tail = newNode;
+    }
+
+    list.y++;  // Increase row count
+
+    result.memory = getUsedMemoryKB() - memStart;
+    timer.finish();
+    result.time = timer.getDurationMicroseconds();
+
+    return list;
+}
+
+
+LinkedList deleteRows(LinkedList list, const string& columnName, const string& value, InsDelResult& result) {
+    result.memory = 0;
+    result.time = 0;
+
+    Timer timer;
+    timer.begin();
+    size_t memStart = getUsedMemoryKB();
+
+    // Find the index of the column
+    int colIdx = -1;
+    for (int i = 0; i < list.x; ++i) {
+        if (list.fieldHead[i] == columnName) {
+            colIdx = i;
+            break;
+        }
+    }
+    if (colIdx < 0) {
+        cerr << "Error: column '" << columnName << "' not found\n";
+        return list;
+    }
+
+    // Delete all matching nodes
+    Node* cur = list.head;
+    while (cur) {
+        Node* nxt = cur->next;
+        if (cur->data[colIdx] == value) {
+            // If current node matches, delete it
+            if (cur->prev) {
+                cur->prev->next = cur->next;
+            } else {
+                list.head = cur->next;  // If first node, update head
+            }
+
+            if (cur->next) {
+                cur->next->prev = cur->prev;
+            } else {
+                list.tail = cur->prev;  // If last node, update tail
+            }
+
+            delete cur;  // Free memory
+            --list.y;  // Decrease row count
+        }
+        cur = nxt;  // Move to the next node
+    }
+
+    result.memory = getUsedMemoryKB() - memStart;
+    timer.finish();
+    result.time = timer.getDurationMicroseconds();
+
+    return list;
+}
 // ——————————————————
 // Bubble‐sort as a free function
 /* 
@@ -766,6 +775,7 @@ LinkedList LL_binarySearch(
     return result;
 }
 
+//////////////////////////////////////////////////////////////////////// Word Frequency Function ////////////////////////////////////////////////////////////////////////
 
 /*
    SearchResult linearMeta;
@@ -776,82 +786,85 @@ std::cout << "Linear search took " << linearMeta.timeMicroseconds << " µs and f
 WordFrequency countTopWordsFromLinkedList(const LinkedList& list,
     const string& columnName,
     int topN = 10) {
-WordFrequency wf;
-wf.size = 0;
-wf.capacity = topN;
-wf.words = new char*[topN];
-wf.counts = new int[topN];
+    WordFrequency wf;
+    wf.size = 0;
+    wf.capacity = topN;
+    wf.words = new char*[topN];
+    wf.counts = new int[topN];
 
-for (int i = 0; i < topN; ++i) {
-wf.words[i] = nullptr;
-wf.counts[i] = 0;
-}
+    for (int i = 0; i < topN; ++i) {
+    wf.words[i] = nullptr;
+    wf.counts[i] = 0;
+    }
 
-size_t memStart = getUsedMemoryKB() * 1024;
-auto start = chrono::high_resolution_clock::now();
+    size_t memStart = getUsedMemoryKB() * 1024;
+    auto start = chrono::high_resolution_clock::now();
 
-// Step 1: Find column index
-int col = -1;
-for (int i = 0; i < list.x; ++i) {
-if (list.fieldHead[i] == columnName) {
-col = i;
-break;
-}
-}
-if (col < 0) {
-wf.timeMicroseconds = 0;
-wf.memoryUsed = 0;
-return wf;
-}
+    // Step 1: Find column index
+    int col = -1;
+    for (int i = 0; i < list.x; ++i) {
+    if (list.fieldHead[i] == columnName) {
+    col = i;
+    break;
+    }
+    }
+    if (col < 0) {
+    wf.timeMicroseconds = 0;
+    wf.memoryUsed = 0;
+    return wf;
+    }
 
-// Step 2: Count word frequencies
-unordered_map<string, int> freq;
-for (Node* cur = list.head; cur; cur = cur->next) {
-const string& s = cur->data[col];
-string token;
-for (unsigned char c : s) {
-if (isalnum(c)) token += tolower(c);
-else if (!token.empty()) {
-++freq[token];
-token.clear();
-}
-}
-if (!token.empty()) ++freq[token];
-}
+    // Step 2: Count word frequencies
+    unordered_map<string, int> freq;
+    for (Node* cur = list.head; cur; cur = cur->next) {
+    const string& s = cur->data[col];
+    string token;
+    for (unsigned char c : s) {
+    if (isalnum(c)) token += tolower(c);
+    else if (!token.empty()) {
+    ++freq[token];
+    token.clear();
+    }
+    }
+    if (!token.empty()) ++freq[token];
+    }
 
-// Step 3: Pick top N using repeated max scan
-struct Pair { string w; int c; };
-vector<Pair> picks;
-picks.reserve(topN);
+    // Step 3: Pick top N using repeated max scan
+    struct Pair { string w; int c; };
+    vector<Pair> picks;
+    picks.reserve(topN);
 
-for (int count = 0; count < topN; ++count) {
-string best;
-int bestC = 0;
-for (auto& kv : freq) {
-if (kv.second > bestC) {
-best = kv.first;
-bestC = kv.second;
-}
-}
-if (bestC == 0) break;
-picks.push_back({best, bestC});
-freq[best] = -1;
-}
+    for (int count = 0; count < topN; ++count) 
+    {
+        string best;
+        int bestC = 0;
+        for (auto& kv : freq) 
+        {
+            if (kv.second > bestC) 
+            {
+                best = kv.first;
+                bestC = kv.second;
+            }
+        }
+    if (bestC == 0) break;
+        picks.push_back({best, bestC});
+        freq[best] = -1;
+    }
 
-// Step 4: Copy into WordFrequency container
-wf.size = picks.size();
-for (int i = 0; i < wf.size; ++i) {
-wf.words[i] = strdup(picks[i].w.c_str());
-wf.counts[i] = picks[i].c;
-}
+    // Step 4: Copy into WordFrequency container
+    wf.size = picks.size();
+    for (int i = 0; i < wf.size; ++i) {
+    wf.words[i] = strdup(picks[i].w.c_str());
+    wf.counts[i] = picks[i].c;
+    }
 
-auto end = chrono::high_resolution_clock::now();
-size_t memEnd = getUsedMemoryKB() * 1024;
+    auto end = chrono::high_resolution_clock::now();
+    size_t memEnd = getUsedMemoryKB() * 1024;
 
-wf.timeMicroseconds = chrono::duration_cast<chrono::microseconds>(end - start).count();
-wf.memoryUsed = memEnd - memStart;
+    wf.timeMicroseconds = chrono::duration_cast<chrono::microseconds>(end - start).count();
+    wf.memoryUsed = memEnd - memStart;
 
-return wf;
+    return wf;
 }
 
 
@@ -878,10 +891,6 @@ void printDataContainer(dataContainer2D& dc)
     // 3) Free all allocated memory
     freeContainer(dc);
 }
-
-
-
-
 /*    
     You Basically just copy paste the code into the main function and run : 
 
