@@ -466,7 +466,7 @@ void question_delete() {
 
     memoryUsage("Before Linked List Delete", memBefore);
     LinkedList deletedLL = deleteRows(originalList, "Customer ID", "CUST7710", LLDeleteResult);
-    nemoryUsage("After Linked List Delete", memAfter);
+    memoryUsage("After Linked List Delete", memAfter);
     LLDeleteResult.memory = (memAfter - memBefore) * 1024;
 
     cout << "-----------------------------------------" << endl;
