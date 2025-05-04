@@ -30,14 +30,6 @@ long long memoryUsage(const string& sortType, long long& memoryUsed) {
 };
 
 
-/////////////////////////////CLEAR THE SCREEN ///////////////////////////////////////////////////////////////
-void clearScreen() {
-    #ifdef _WIN32
-        system("cls");
-    #else
-        system("clear");
-    #endif
-}
 
 
 void questionOne()
@@ -180,6 +172,14 @@ void questionOne()
     cout << "-----------------------------------------" << endl;
     cout << "Number of transactions in cleaned_transactions.csv: " << original.y << endl;
     cout << "-----------------------------------------" << endl;
+    LinkedList list;
+    if (!list.loadFromCSV("cleaned_transactions.csv")) 
+    {
+        return;
+    }
+    cout << "------Proof of Sort by Printing First 10 Rows-------" << endl;
+    bubbleSort(list, "Date");
+    list.printForward(10);
     
 }
 
@@ -243,9 +243,10 @@ void questionTwo() {
     cout << "Total Transactions: " << ct_data.y << endl;
     cout << "Linear - Result Count: " << arrayLinear.avgResultCount / 10 << " | %: " << arrayLinear.percentage << endl;
     cout << "Binary - Result Count: " << arrayBinary.avgResultCount / 10 << " | %: " << arrayBinary.percentage << endl;
-    cout << "Average Linear Time: " << arrayLinear.avgTime / 10 << " µs | Memory: " << arrayLinear.avgMemory / 10 << " KB" << endl;
-    cout << "Average Binary Time: " << arrayBinary.avgTime / 10 << " µs | Memory: " << arrayBinary.avgMemory / 10 << " KB" << endl;
+    cout << "Average Linear Time: " << arrayLinear.avgTime / 10 << " micro seconds | Memory: " << arrayLinear.avgMemory / 10 << " KB" << endl;
+    cout << "Average Binary Time: " << arrayBinary.avgTime / 10 << " micro seconds | Memory: " << arrayBinary.avgMemory / 10 << " KB" << endl;
     cout << "-----------------------------------------" << endl;
+
 
     // Linked List
     LinkedList original;
@@ -288,6 +289,8 @@ void questionTwo() {
         memoryUsage("After LL Binary Search 2", memAfter);
         SecondBinarySearchResultLL.memoryUsed = memAfter - memBefore;
 
+        //SecondBinarySearchLL.printForward(10);
+
         listBinary.avgTime += FirstBinarySearchResultLL.timeMicroseconds + SecondBinarySearchResultLL.timeMicroseconds;
         listBinary.avgMemory += FirstBinarySearchResultLL.memoryUsed + SecondBinarySearchResultLL.memoryUsed;
         listBinary.avgResultCount = SecondBinarySearchResultLL.resultCount;
@@ -304,9 +307,21 @@ void questionTwo() {
     cout << "Total Transactions: " << original.y << endl;
     cout << "Linear - Result Count: " << listLinear.avgResultCount << " | %: " << listLinear.percentage << endl;
     cout << "Binary - Result Count: " << listBinary.avgResultCount << " | %: " << listBinary.percentage << endl;
-    cout << "Average Linear Time: " << listLinear.avgTime / 10 << " µs | Memory: " << listLinear.avgMemory / 10 << " KB" << endl;
-    cout << "Average Binary Time: " << listBinary.avgTime / 10 << " µs | Memory: " << listBinary.avgMemory / 10 << " KB" << endl;
+    cout << "Average Linear Time: " << listLinear.avgTime / 10 << " micro seconds | Memory: " << listLinear.avgMemory / 10 << " KB" << endl;
+    cout << "Average Binary Time: " << listBinary.avgTime / 10 << " micro seconds | Memory: " << listBinary.avgMemory / 10 << " KB" << endl;
     cout << "-----------------------------------------" << endl;
+
+    LinkedList list;
+    if (!list.loadFromCSV("cleaned_transactions.csv")) 
+    {
+        return;
+    }
+   
+    LinkedList onlyElectronics = list.linearKeepRows("Category", "Electronics");
+    LinkedList onlyElectronicsNCreditCard = onlyElectronics.linearKeepRows("Payment Method", "Credit Card");
+    cout << "--------Proof of Search by Printing First 10 Rows------------" << endl;
+    onlyElectronicsNCreditCard.printForward(10);
+
 }
 
 
@@ -380,64 +395,67 @@ void questionThree() {
     freeFrequencyContainer(wfLL);
 }
 
-void question_insert() {
+void question_insert() 
+{
     long long memBefore, memAfter;
 
     // ---------------------- ARRAY ----------------------
     dataContainer2D cr_data = getData("cleaned_reviews.csv");
     InsDelResult ArrayInsertResult;
+    // -------------------- LINKED LIST ------------------
+    LinkedList original;
+    original.loadFromCSV("cleaned_reviews.csv");
 
-    const char * newRecord[] = {"PROD441", "CUST0001", "1", "This is a new review."};
+    const char** newRecord = getValidatedNewRecord(original.fieldHead, original.x);
+    //const char * newRecord[] = {"PROD441", "CUST0001", "1", "This is a new review."};
     int recordSize = 4;
 
     memoryUsage("Before Array Insert", memBefore);
-    dataContainer2D UpdatedData = writeNewLines(cr_data, newRecord, recordSize, ArrayInsertResult);
+    dataContainer2D UpdatedData = writeNewTopLines(cr_data, newRecord, recordSize, ArrayInsertResult);
     memoryUsage("After Array Insert", memAfter);
     ArrayInsertResult.memory = (memAfter - memBefore) * 1024; // in bytes
 
+    
+    InsDelResult LLInsertResult;
+
+    memoryUsage("Before Linked List Insert", memBefore);
+    original.insertNewTopRowArray(newRecord);
+    memoryUsage("After Linked List Insert", memAfter);
+    LLInsertResult.memory = (((memAfter - memBefore) * 1024)/10000000); // in mega bytes
+
+    // Print the last 10 records to verify the insertion);
     cout << "-----------------------------------------" << endl;
     cout << "                  Array                  " << endl;
     cout << "-----------------------------------------" << endl;
     cout << "New record added successfully.\n";
     cout << "Total records before insert: " << cr_data.y << "\n";
     cout << "Total records after insert: " << UpdatedData.y << "\n";
-
-    cout << "3373th row: ";
-    for (int j = 0; j < UpdatedData.x; ++j) {
-        cout << " | " << UpdatedData.data[3373-1][j] << " | ";
-    }
-    cout << "\n";
-    cout << "-----------------------------------------" << endl;
     cout << "Time taken: " << ArrayInsertResult.time << " Micro Seconds\n";
     cout << "Estimated memory: " << ArrayInsertResult.memory << " bytes\n";
-
-    // -------------------- LINKED LIST ------------------
-    LinkedList original;
-    original.loadFromCSV("cleaned_reviews.csv");
-    InsDelResult LLInsertResult;
-
-    const char * newRow[] = {"PROD424", "CUST0001", "3", "This is a new review."};
-
-    memoryUsage("Before Linked List Insert", memBefore);
-    LinkedList updatedLL = insertNewRowLinkedList(original, newRow, 4, LLInsertResult);
-    memoryUsage("After Linked List Insert", memAfter);
-    LLInsertResult.memory = (memAfter - memBefore) * 1024;
 
     cout << "-----------------------------------------" << endl;
     cout << "               Linked List               " << endl;
     cout << "-----------------------------------------" << endl;
     cout << "New record added successfully.\n";
-    cout << "Total records before insert: " << original.y << "\n";
-    cout << "Total records after insert: " << updatedLL.y << "\n";
+    cout << "Total records before insert: " << original.y-1 << "\n";
+    cout << "Total records after insert: " << original.y << "\n";
     cout << "Time taken: " << LLInsertResult.time << " Micro Seconds\n";
-    cout << "Estimated memory: " << LLInsertResult.memory << " bytes\n";
-    cout << "-----------------------------------------" << endl;
-    updatedLL.printForward(); // Print the 3373th row
+    cout << "Estimated memory: " << LLInsertResult.memory << " mega bytes\n";
+    cout << "\n----Proof of Insert by Printing First 10 Rows (Array)-----\n" << endl;
+    for (int i = 0; i < min(10, UpdatedData.y); ++i) {
+        for (int j = 0; j < UpdatedData.x; ++j) {
+            cout << UpdatedData.data[i][j] << " ";
+        }
+        cout << endl;
+    }
+    cout << "\n----Proof of Insert by Printing First 10 Rows (Linked List)-----\n" << endl;
+    original.printForward(10);
 
 
     freeContainer(cr_data);
     freeContainer(UpdatedData);
 }
+
 void question_delete() {
     long long memBefore, memAfter;
 
@@ -446,18 +464,9 @@ void question_delete() {
     InsDelResult ArrayDeleteResult;
 
     memoryUsage("Before Array Delete", memBefore);
-    dataContainer2D deletedData = deleteAllRecords(cr_data, "Customer ID", "CUST5045", ArrayDeleteResult);
+    dataContainer2D deletedData = deleteAllRecords(cr_data, "Customer ID", "CUST7329", ArrayDeleteResult);
     memoryUsage("After Array Delete", memAfter);
     ArrayDeleteResult.memory = (memAfter - memBefore) * 1024;
-
-    cout << "-----------------------------------------" << endl;
-    cout << "                  Array                  " << endl;
-    cout << "-----------------------------------------" << endl;
-    cout << "All records with Customer ID = CUST5045 deleted successfully.\n";
-    cout << "Total records before delete: " << cr_data.y << "\n";
-    cout << "Total records after delete: " << deletedData.y << "\n";
-    cout << "Time taken: " << ArrayDeleteResult.time << " Micro Seconds\n";
-    cout << "Estimated memory: " << ArrayDeleteResult.memory << " bytes\n";
 
     // -------------------- LINKED LIST ------------------
     LinkedList originalList;
@@ -465,16 +474,26 @@ void question_delete() {
     InsDelResult LLDeleteResult;
 
     memoryUsage("Before Linked List Delete", memBefore);
-    LinkedList deletedLL = deleteRows(originalList, "Customer ID", "CUST7710", LLDeleteResult);
+    originalList.deleteRows("Customer ID", "CUST7329");
     memoryUsage("After Linked List Delete", memAfter);
     LLDeleteResult.memory = (memAfter - memBefore) * 1024;
+
+    originalList.printForward(10);
+    cout << "-----------------------------------------" << endl;
+    cout << "                  Array                  " << endl;
+    cout << "-----------------------------------------" << endl;
+    cout << "All records with Customer ID = CUST7329 deleted successfully.\n";
+    cout << "Total records before delete: " << cr_data.y << "\n";
+    cout << "Total records after delete: " << deletedData.y << "\n";
+    cout << "Time taken: " << ArrayDeleteResult.time << " Micro Seconds\n";
+    cout << "Estimated memory: " << ArrayDeleteResult.memory << " bytes\n";
 
     cout << "-----------------------------------------" << endl;
     cout << "               Linked List               " << endl;
     cout << "-----------------------------------------" << endl;
-    cout << "All records with Customer ID = CUST7710 deleted successfully.\n";
-    cout << "Total records before delete: " << originalList.y << "\n";
-    cout << "Total records after delete: " << deletedLL.y << "\n";
+    cout << "All records with Customer ID = CUST7329 deleted successfully.\n";
+    cout << "Total records before delete: " << originalList.y+1 << "\n";
+    cout << "Total records after delete: " << originalList.y << "\n";
     cout << "Time taken: " << LLDeleteResult.time << " Micro Seconds\n";
     cout << "Estimated memory: " << LLDeleteResult.memory << " bytes\n";
 
